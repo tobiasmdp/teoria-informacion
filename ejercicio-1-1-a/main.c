@@ -30,7 +30,7 @@ void LeeArch(char Vsimbolos[],int cantidad,int MContSimbolos [][MAX],int VContsi
     int j,pos,posant=-1;
     FILE* arch;
     char lect;
-    arch=fopen("DatosTp1.txt","rt");
+    arch=fopen("juego-catedra.txt","rt");
     if(arch==NULL)
         printf("No hay archivo");
     else{
@@ -42,15 +42,15 @@ void LeeArch(char Vsimbolos[],int cantidad,int MContSimbolos [][MAX],int VContsi
             }
             if(posant!=-1){
                 VContsimbolos[pos]++;                  //!= -1 PARA EVITAR EL PRIMER CARACTER
-                MContSimbolos[pos][posant]++;     //INCREMENTA EL CONTADOR EN LA MTRIZ SIMBOLOS
+                MContSimbolos[pos][posant]++;     //INCREMENTA EL CONTADOR EN LA MATRIZ SIMBOLOS
             }
-            posant=pos;                               //FILA== ANTERIOR COLUMNA==ACTUAL
+            posant=pos;                               //FILA = Actual COLUMNA = Anterior
             fread(&lect,sizeof(char),1,arch);
         }
         fclose(arch);
+        MostrarMatriz(cantidad,MContSimbolos);
+        MostrarVector(cantidad,VContsimbolos);
     }
-    MostrarMatriz(cantidad,MContSimbolos);
-    MostrarVector(cantidad,VContsimbolos);
 }
 
 void MostrarVector(int cantidad, int VContsimbolos [] ){
