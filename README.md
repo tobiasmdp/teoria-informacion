@@ -1,7 +1,7 @@
 
-#1 Teoria de la informacion
+# Teoria de la informacion #H1
 
-#2 Nomenclatura
+## Nomenclatura 
 Los ejercicios separados en carpetas nombradas segun la siguiente nomenclatura:
 ejercicio-{numero}-{parte}-{inciso}
 
@@ -9,5 +9,5 @@ ejercicio-{numero}-{parte}-{inciso}
 2. Parte: Porciones / incisos principales en los cuales se divide el trabajo practico. *Entero*
 3. Inciso: Sub-indice de cada parte. *Caracter alfabetico minuscula*
 
-#2 Integrantes
+## Integrantes
 Alejandro Olave, Mikel ; Giacri, Tobías ; Nievas, Nahuel Isaias
