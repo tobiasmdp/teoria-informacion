@@ -7,22 +7,32 @@
 struct nodoCodigo{
     int FrecCodigos;
     char Codigos[MAXCARCT];
+    float probabilidades;
 };
 
-void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter);
+void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * );
 int checkRepetido(char [MAXCARCT],struct nodoCodigo [], int );
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
-
+void CalculaProbabilidades(struct nodoCodigo [],int , int  );
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
     int LongCaracter=3;
-    LeeArch(VCodigos,&CantPalabras,LongCaracter);
+    int PalabrasTotales=0;
+    LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales);
     MostrarVector(VCodigos,CantPalabras);
+    CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
     return 0;
 }
 
-void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter){
+void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  PalabrasTotales){
+    float acum=0;
+    for (int i=0;i<CantPalabras;i++){
+        VCodigos[i].probabilidades=(float)VCodigos[i].FrecCodigos/PalabrasTotales;
+    }
+}
+
+void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales){
     FILE* arch;
     char lect[MAXCARCT];
     int pos;
@@ -32,6 +42,7 @@ void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter){
     else{
         fread(&lect,sizeof(char),LongCaracter,arch);
         while(!feof(arch)){
+            *PalabrasTotales+=1;
             pos=checkRepetido(lect,VCodigos,*CantPalabras);
             if (pos!=-1) 
                 VCodigos[pos].FrecCodigos+=1;
