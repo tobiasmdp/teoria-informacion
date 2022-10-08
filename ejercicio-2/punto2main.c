@@ -66,7 +66,8 @@ void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras){
 int i=0;
     for (i=0;i<CantPalabras;i++){
         printf("Codigo: %s ",VCodigos[i].Codigos);
-        printf("frecuencia: %d \n",VCodigos[i].FrecCodigos);
+        printf("frecuencia: %d ",VCodigos[i].FrecCodigos);
+        printf("probablilidades: %f \n",VCodigos[i].probabilidades);
     }
 }
 
