@@ -14,6 +14,7 @@ void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, in
 int checkRepetido(char [MAXCARCT],struct nodoCodigo [], int );
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
 void CalculaProbabilidades(struct nodoCodigo [],int , int  );
+void CalculaEntropia(struct nodoCodigo VCodigos[],int CantPalabras);
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
@@ -22,14 +23,8 @@ int main(){
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales);
     MostrarVector(VCodigos,CantPalabras);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
+    CalculaEntropia(VCodigos,CantPalabras);
     return 0;
-}
-
-void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  PalabrasTotales){
-    float acum=0;
-    for (int i=0;i<CantPalabras;i++){
-        VCodigos[i].probabilidades=(float)VCodigos[i].FrecCodigos/PalabrasTotales;
-    }
 }
 
 void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales){
@@ -73,4 +68,20 @@ int i=0;
         printf("Codigo: %s ",VCodigos[i].Codigos);
         printf("frecuencia: %d \n",VCodigos[i].FrecCodigos);
     }
+}
+
+
+void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  PalabrasTotales){
+    for (int i=0;i<CantPalabras;i++){
+        VCodigos[i].probabilidades=(float)VCodigos[i].FrecCodigos/PalabrasTotales;
+    }
+}
+
+
+void CalculaEntropia(struct nodoCodigo VCodigos[],int CantPalabras){
+    float acum=0;
+    for (int i=0;i<CantPalabras;i++){
+            acum+=VCodigos[i].probabilidades*(log10(1/VCodigos[i].probabilidades)/log10(2));
+    }
+    printf("Entropia: %f", acum);
 }
