@@ -26,6 +26,8 @@ int main(){
     int LongCaracter=3;
     int PalabrasTotales=0;
     float EntropiaTotal;
+    /*printf("ingrese la longitud de los caracteres");
+    scanf("%d",&LongCaracter);*/
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
     CalculaEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal);
