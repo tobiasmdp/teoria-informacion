@@ -34,9 +34,11 @@ int main(){
     CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
     MostrarVector(VCodigos,CantPalabras);
     if (checkCompacto(VCodigos,CantPalabras,LongCaracter))
-        printf("es compacto");
+        printf("es compacto \n");
     else 
-        printf("no es compacto");
+        printf("no es compacto \n");
+    printf("su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
+    printf("su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
     return 0;
 }
 
