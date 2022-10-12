@@ -1,6 +1,6 @@
-{
+{hola
     "configurations": [
-        {
+        { 
             "name": "(gdb) Iniciar",
             "type": "cppdbg",
             "request": "launch",

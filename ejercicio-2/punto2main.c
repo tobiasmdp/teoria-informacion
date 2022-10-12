@@ -24,7 +24,7 @@ int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaract
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
-    int LongCaracter=7;
+    int LongCaracter=3; //variande este parametro se consideran las cadenas de diferentes largos
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     /*printf("ingrese la longitud de los caracteres");
