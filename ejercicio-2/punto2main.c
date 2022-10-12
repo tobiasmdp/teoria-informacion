@@ -7,30 +7,31 @@
 #define MAXCARCT 10
 
 struct nodoCodigo{
-    int FrecCodigos;
-    char Codigos[MAXCARCT];
-    float probabilidades;
-    float entropia;
+    int FrecCodigos; //Cant repeticiones en el txt
+    char Codigos[MAXCARCT]; //Ej: AAA
+    float probabilidades; //prob de aparicion
+    float entropia; 
+    float cantInfo;
 };
 
 void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * );
 int checkRepetido(char [MAXCARCT],struct nodoCodigo [], int );
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
 void CalculaProbabilidades(struct nodoCodigo [],int , int  );
-void CalculaEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int, float*);
+void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int, float* entropia,  float* cantInfo);
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter);
 
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
-    int LongCaracter=3;
+    int LongCaracter=7;
     int PalabrasTotales=0;
-    float EntropiaTotal;
+    float EntropiaTotal, cantInfoTotal;
     /*printf("ingrese la longitud de los caracteres");
     scanf("%d",&LongCaracter);*/
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
-    CalculaEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal);
+    CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
     MostrarVector(VCodigos,CantPalabras);
     if (checkCompacto(VCodigos,CantPalabras,LongCaracter))
         printf("es compacto");
@@ -91,14 +92,17 @@ void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  P
     }
 }
 
-
-void CalculaEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia){
+void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia, float *infoTotal){
     *entropia=0;
+    *infoTotal=0;
     for (int i=0;i<CantPalabras;i++){
-            VCodigos[i].entropia=VCodigos[i].probabilidades*(log10(1/VCodigos[i].probabilidades)/log10(LongCaracter));
+            VCodigos[i].cantInfo=(log10(1/VCodigos[i].probabilidades)/log10(LongCaracter)); //tambien se calcula la informacion
+            VCodigos[i].entropia=VCodigos[i].probabilidades*VCodigos[i].cantInfo;
+            *infoTotal+= VCodigos[i].cantInfo;
             *entropia+=VCodigos[i].entropia;
     }
-    printf("Entropia: %f \n", *entropia);
+    printf("Informacion Total: %f \n", *infoTotal);
+    printf("Entropia Total: %f \n", *entropia);
 }
 
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter){
