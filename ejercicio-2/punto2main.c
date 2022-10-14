@@ -37,9 +37,10 @@ void CalculaProbabilidades(struct nodoCodigo [],int , int  );
 void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int, float* entropia,  float* cantInfo);
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter);
 void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras);
-void BuscoMinimos(Tarbol VArbol[],int cantarboles,float *min1,float *min2,int *posmin1, int *posmin2);
+void BuscoMinimos(Tarbol VArbol[],int cantarboles,int arbtemp,float *min1,float *min2,int *posmin1, int *posmin2);
 void CreoArbol (Tarbol *A, char dato1[], float frec1, char dato2[], float frec2);
 void UnoArboles(Tarbol VArbol[],int posmin1,int posmin2);
+void postorden(Tarbol a);
 
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
@@ -68,7 +69,7 @@ void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, in
     FILE* arch;
     char lect[MAXCARCT];
     int pos;
-    arch=fopen("juego-catedra.txt","rt");
+    arch=fopen("prueba1.txt"/*"juego-catedra.txt"*/,"rt");
     if(arch==NULL)
         printf("No hay archivo");
     else{
@@ -180,7 +181,7 @@ void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras){
         if (min1>-1 && min2> -1 && min1< VCodigos[ant].probabilidades && min2< VCodigos[ant].probabilidades) {
             UnoArboles(VArbol,posmin1,posmin2);
             arbtemp--;
-            BuscoMinimos(VArbol,cantarboles,&min1,&min2,&posmin1,&posmin2);
+            BuscoMinimos(VArbol,cantarboles,arbtemp,&min1,&min2,&posmin1,&posmin2);
         }
         if (ant==0 || (min1<VCodigos[ant].probabilidades && min2>VCodigos[ant].probabilidades && min1==VCodigos[sig].probabilidades) ) { //primer elemento del vector o esta en el medio
             if (!VArbol[cantarboles]) // esto es para saber si despues le tenvo que sumar o no a cantarboles
@@ -191,67 +192,50 @@ void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras){
             arbtemp++;
             if (sumcantarb)
                 cantarboles++;
-            if (ant==0){
-                min1=VArbol[ant]->prob;
-                posmin1=ant;
-            }
             ant++;
         } 
         else if(sig==-1){ //ultimo elemento del vector
             CreoArbol(&VArbol[posmin1],VCodigos[ant].Codigos,VCodigos[ant].FrecCodigos,"zzz",0);
             arbtemp++;
             cantarboles++;
+        }else{
+            CreoArbol(&VArbol[posmin1],VCodigos[ant].Codigos,VCodigos[ant].probabilidades,VCodigos[ant].Codigos,VCodigos[ant].probabilidades); //vuelvo a pasar en la segunda parte lo mismo porque tengo que rellenar los parametros, sino no serian necesarios
         }
-        BuscoMinimos(VArbol,cantarboles,&min1,&min2,&posmin1,&posmin2);
+        
         ant++;
+        BuscoMinimos(VArbol,cantarboles,arbtemp,&min1,&min2,&posmin1,&posmin2);
     }
     while (arbtemp>1){
         UnoArboles(VArbol,posmin1,posmin2);
-        BuscoMinimos(VArbol,cantarboles,&min1,&min2,&posmin1,&posmin2);
+        BuscoMinimos(VArbol,cantarboles,arbtemp,&min1,&min2,&posmin1,&posmin2);
         arbtemp--;
     }//teoricamente en la pos 0 del vector tiene que quedar el arbol
-    //aca tendria que recorrese el arbol para encontrar los codigos
+    postorden(VArbol[0]); //aca tendria que recorrese el arbol para encontrar los codigos
 }
 
-/*void AgregoNodoListaOrdenada(TLista *L){
-    TLista ant,recorre,nuevo;
-    int i;
-    nuevo= (TLista)malloc (sizeof(nodo));
-    nuevo->arbol=a;
-    if(*L==NULL){
-        nuevo->sig=*L;
-        *L=nuevo;
-    }
-    else{
-        while ( recorre!=NULL && recorre->arbol->frec<nuevo->arbol->frec){
-            ant=recorre;
-            recorre=recorre->sig;
-        }
-        if (recorre==NULL){
-            nuevo->sig=ant->sig; //asigno null
-            ant->sig=nuevo;
-       }
-       else{
-        nuevo->sig=recorre;
-        ant->sig=nuevo;
-       }
-    }
-}*/
-
-void BuscoMinimos(Tarbol VArbol[],int cantarboles,float *min1,float *min2,int *posmin1, int *posmin2){
+void BuscoMinimos(Tarbol VArbol[],int cantarboles,int arbtemp,float *min1,float *min2,int *posmin1, int *posmin2){
 float auxmin1=99999, auxmin2=99999;
-int  auxpos1,auxpos2;
-    for(int i=0;i<cantarboles;i++){
-        if (auxmin1<VArbol[i]->prob && auxmin2>VArbol[i]->prob){
-            auxmin2=VArbol[i]->prob;
-            auxpos2=i;
-        }
-        else if (auxmin1>VArbol[i]->prob && auxmin2>VArbol[i]->prob){
-            auxmin2=auxmin1;
-            auxpos2=auxpos1;
-            auxmin1=VArbol[i]->prob;
-            auxpos1=i;
-        }
+int  auxpos1,auxpos2,i=0,auxcontarb=0;
+    while (auxcontarb<arbtemp){
+        if(VArbol[i]!=NULL){
+            if(arbtemp==1){
+                auxmin1=VArbol[i]->prob;
+                auxmin2=VArbol[i]->prob;
+                auxpos1=i;
+                auxpos2=auxpos1;
+            }
+            else if (auxmin1<VArbol[i]->prob && auxmin2>VArbol[i]->prob){
+                auxmin2=VArbol[i]->prob;
+                auxpos2=i;
+            }else if (auxmin1>VArbol[i]->prob && auxmin2>VArbol[i]->prob){
+                auxmin2=auxmin1;
+                
+                auxmin1=VArbol[i]->prob;
+                auxpos1=i;
+            }
+        auxcontarb++;
+        }   
+        i++;
     }
     *min1=auxmin1;
     *min2=auxmin2;
@@ -270,7 +254,7 @@ void CreoArbol (Tarbol *A, char dato1[], float frec1, char dato2[], float frec2)
         hoja1->izq = NULL;
         hoja2 = (Tarbol)malloc(sizeof(NODO));
         strcpy(hoja2->dato,dato2);
-        hoja2->prob = frec1;
+        hoja2->prob = frec2;
         hoja2->der = NULL;
         hoja2->izq = NULL;
         *A = (Tarbol)malloc(sizeof(NODO));
@@ -310,4 +294,12 @@ Tarbol a;
     (a)->der = VArbol[posmin2];
     VArbol[posmin1]=a;
     VArbol[posmin2]=NULL;
+}
+
+void postorden(Tarbol a) {
+    if (a != NULL) {
+        postorden(a->izq);
+        postorden(a->der);
+        printf("%2.4f,", a->prob);
+    }
 }
