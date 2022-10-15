@@ -258,11 +258,12 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
     char auxString[MAXCARCT];
     float kbytesTotales;
     archIni=fopen(archivoInicial,"rt");
-    archFin=fopen(archivoFinal,"ab+"); // append al archivo ya con el header
+    archFin=fopen(archivoFinal,"wb+"); // no funciona con append tampoco
     if(archIni==NULL)
         printf("No hay archivo");
     else{
         fread(&lect,sizeof(char),LongCaracter,archIni);
+        fseek(archFin,0,SEEK_END);
         posTamanio = ftell(archFin)-4; //guarda 4 bytes atras, donde arranca el espacio para escribir el tamanio
         while(!feof(archIni)){
 
