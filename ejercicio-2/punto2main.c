@@ -47,7 +47,8 @@ void GenerarCadenas(struct nodoCodigo [], Tarbol , char  []);
 int Busqueda(struct nodoCodigo [], char []);
 void EscribirArchivoConHuffman(struct nodoCodigo [], int , int, char [], char []);
 void sumadorBinario(int* , int* , char  [],int );
-
+int traductorBinario(char cadena[]);
+void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int longCaracter,char archivoFinal[], int * posicionTamanio);
 
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
@@ -71,6 +72,7 @@ int main(){
     printf("su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
     printf("su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
     creacionHuffman (VCodigos,CantPalabras);
+
     EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
     return 0;
 }
@@ -397,4 +399,42 @@ void postorden(Tarbol a) {
         postorden(a->der);
         printf("%2.4f,", a->prob);
     }
+}
+
+//void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter, char archivoInicial[], char archivoFinal[]){
+void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int longCaracter,char archivoFinal[], int * posicionTamanio){
+    FILE* archHuffman;
+    int auxHuffman;
+    char palHuffman[MAXCADENA];
+    archHuffman = fopen(archivoFinal,"wb");
+    if (!archHuffman){
+        printf("Error al abrir el archivo para escribir los headers");
+    } 
+    else {
+        longCaracter <<= 24; //se graba 1 byte, int = 4bytes --->desplazo 3 bytes = 24 bits (hasta 255)
+        cantPalabras <<= 16; //(hasta 65,535)
+        fwrite(&longCaracter,1,1,archHuffman); 
+        fwrite(&cantPalabras,2,1,archHuffman);
+        for (int i=0;i< cantPalabras;i++){
+            fwrite(&VCodigos[i].cadenaHuffman,longCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
+            auxHuffman = strlen(VCodigos[i].cadenaHuffman)<<24; 
+            fwrite(&auxHuffman,1,1,archHuffman); //longitud codigo huffman
+            auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
+            fwrite(&auxHuffman,4,1,archHuffman); //codigo de huffman en un entero
+        }
+        *posicionTamanio = ftell(archHuffman);
+        fwrite(0,4,1,archHuffman); // dejo 4 bytes para poner el tamanio del archivo
+        fclose(archHuffman);
+    }
+}
+
+int traductorBinario(char cadena[]){
+    int largo = strlen(cadena), resultado=0;
+    for (int i = 0; i<largo; i++){
+        resultado<<=1;
+        if(cadena[i] == 1){
+            resultado++;
+        }
+    }
+    return resultado;
 }
