@@ -5,6 +5,7 @@
 
 #define MAXVEC 10000
 #define MAXCARCT 10
+#define MAXCADENA 30
 
 struct nodoCodigo{
     int FrecCodigos; //Cant repeticiones en el txt
@@ -12,6 +13,7 @@ struct nodoCodigo{
     float probabilidades; //prob de aparicion
     float entropia; 
     float cantInfo;
+    char cadenaHuffman[MAXCADENA];
 };
 
 /*typedef struct nodo{
@@ -27,7 +29,7 @@ typedef struct nodo {
 } NODO;
 typedef NODO * Tarbol;
 
-void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * );
+void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * , char []);
 int checkRepetido(char [MAXCARCT],struct nodoCodigo [], int );
 void quickSort(struct nodoCodigo VCodigos[], int low, int high);
 int partition(struct nodoCodigo VCodigos[], int low, int high);
@@ -41,6 +43,11 @@ void BuscoMinimos(Tarbol VArbol[],int cantarboles,int arbtemp,float *min1,float 
 void CreoArbol (Tarbol *A, char dato1[], float frec1, char dato2[], float frec2);
 void UnoArboles(Tarbol VArbol[],int posmin1,int posmin2);
 void postorden(Tarbol a);
+void GenerarCadenas(struct nodoCodigo [], Tarbol , char  []);
+int Busqueda(struct nodoCodigo [], char []);
+void EscribirArchivoConHuffman(struct nodoCodigo [], int , int, char [], char []);
+void sumadorBinario(int* , int* , char  [],int );
+
 
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
@@ -50,7 +57,9 @@ int main(){
     float EntropiaTotal, cantInfoTotal;
     /*printf("ingrese la longitud de los caracteres");
     scanf("%d",&LongCaracter);*/
-    LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales);
+    char archivoInicial[MAXCADENA]="prueba1.txt"; //juego-catedra.txt
+    char archivoFinal[MAXCADENA]="prueba2.dat";
+    LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales,archivoInicial);
     quickSort(VCodigos, 0, CantPalabras - 1);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
     CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
@@ -62,14 +71,15 @@ int main(){
     printf("su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
     printf("su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
     creacionHuffman (VCodigos,CantPalabras);
+    EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
     return 0;
 }
 
-void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales){
+void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales, char archivoInicial[]){
     FILE* arch;
     char lect[MAXCARCT];
     int pos;
-    arch=fopen("prueba1.txt"/*"juego-catedra.txt"*/,"rt");
+    arch=fopen(archivoInicial,"rt");
     if(arch==NULL)
         printf("No hay archivo");
     else{
@@ -210,8 +220,93 @@ void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras){
         BuscoMinimos(VArbol,cantarboles,arbtemp,&min1,&min2,&posmin1,&posmin2);
         arbtemp--;
     }//teoricamente en la pos 0 del vector tiene que quedar el arbol
+    GenerarCadenas(VCodigos,VArbol[0],"");
     postorden(VArbol[0]); //aca tendria que recorrese el arbol para encontrar los codigos
 }
+
+void GenerarCadenas(struct nodoCodigo VCodigos[], Tarbol a, char cadena []){
+    int indice;
+    char cadenaAuxiliar1[MAXCADENA];
+    char cadenaAuxiliar2[MAXCADENA];
+    strcpy(cadenaAuxiliar1,cadena);
+    strcpy(cadenaAuxiliar2,cadena);
+    if (a!=NULL){
+        if(a->izq== NULL && a->der== NULL){
+            indice=Busqueda(VCodigos,a->dato);
+            strcpy(VCodigos[indice].cadenaHuffman,cadena);
+        }
+        else{
+            GenerarCadenas(VCodigos,a->der,strcat(cadenaAuxiliar1,"0"));
+            GenerarCadenas(VCodigos,a->izq,strcat(cadenaAuxiliar2,"1"));
+        }
+    }
+}
+
+int Busqueda(struct nodoCodigo VCodigos[], char palabra []){
+    int i=0;
+    while(strcmp(VCodigos[i].Codigos,palabra)!=0)
+        i++;
+    return i;
+}
+
+void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter, char archivoInicial[], char archivoFinal[]){
+    FILE* archIni, *archFin;
+    int indice,i,bitsCompletados=0,auxiliar,libre,bitsTotales=0;
+    char lect[MAXCARCT];
+    char auxString[MAXCARCT];
+    archIni=fopen(archivoInicial,"rt");
+    archFin=fopen(archivoFinal,"wb+");
+    if(archIni==NULL)
+        printf("No hay archivo");
+    else{
+        fread(&lect,sizeof(char),LongCaracter,archIni);
+        while(!feof(archIni)){
+            indice=Busqueda(VCodigos,lect);
+            strcpy(auxString,VCodigos[indice].cadenaHuffman);
+
+            if(bitsCompletados+LongCaracter<=32){//Que puedo insertarlo tranquilo
+                for(i=0;i<strlen(auxString);i++){
+                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
+                }
+                if(bitsCompletados==32){
+                    bitsCompletados==0;
+                    fwrite(&auxiliar,sizeof(int),1,archFin);
+                    bitsTotales+=32;
+            }
+            }
+            else{// Inserto una particion
+                libre=bitsCompletados+LongCaracter-32;
+                for(i=0;i<32-bitsCompletados;i++){
+                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
+                }
+                fwrite(&auxiliar,sizeof(int),1,archFin);
+                bitsTotales+=32;
+                bitsCompletados=libre;
+                for(i=0;i<libre;i++){
+                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
+                }
+            }
+            fread(&lect,sizeof(char),LongCaracter,archIni);
+            
+        }
+        if(bitsCompletados!=32){
+            bitsTotales+=bitsCompletados;
+            auxiliar<<=32-bitsCompletados;
+            fwrite(&auxiliar,sizeof(int),1,archFin);
+        }
+    }
+    fclose(archIni);
+    fclose(archFin);
+}
+
+void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
+    (*auxiliar)<<=1;
+    *bitsCompletados+=1;
+    if(lect[i]=='1')
+        *auxiliar+=1; 
+}
+
+
 
 void BuscoMinimos(Tarbol VArbol[],int cantarboles,int arbtemp,float *min1,float *min2,int *posmin1, int *posmin2){
 float auxmin1=99999, auxmin2=99999;
