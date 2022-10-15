@@ -264,7 +264,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             indice=Busqueda(VCodigos,lect);
             strcpy(auxString,VCodigos[indice].cadenaHuffman);
 
-            if(bitsCompletados+LongCaracter<=32){//Que puedo insertarlo tranquilo
+            if(bitsCompletados+strlen(auxString)<=32){//Que puedo insertarlo tranquilo
                 for(i=0;i<strlen(auxString);i++){
                     sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
                 }
@@ -275,7 +275,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             }
             }
             else{// Inserto una particion
-                libre=bitsCompletados+LongCaracter-32;
+                libre=bitsCompletados+strlen(auxString)-32;
                 for(i=0;i<32-bitsCompletados;i++){
                     sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
                 }
