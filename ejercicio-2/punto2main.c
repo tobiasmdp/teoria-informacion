@@ -59,6 +59,9 @@ void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int lon
 void DecodificarArchivoConHuffman(char  [], char []);
 void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [],int , int );
 int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
+void TraductorAString( char cadena[], char largo, int cadenaBinaria);
+
+
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
@@ -91,39 +94,45 @@ int main(){
 }
 
 void DecodificarArchivoConHuffman(char archivoFinal [], char archivoResultado []){
-    unsigned char LongCaracter;
-    short int CantPalabras;
-    int tamanio,postamanio;
+
+    int tamanio,postamanio, LongCaracter, CantPalabras;
     
     FILE * archHuffman;
     struct nodoCodigoDecodificador VCodigos[MAXVEC];
     archHuffman = fopen(archivoFinal,"rb");
 
-    fread(&LongCaracter,1,1,archHuffman); 
-    fread(&CantPalabras,2,1,archHuffman);
+    fread(&LongCaracter,sizeof(int),1,archHuffman); 
+    fread(&CantPalabras,sizeof(int),1,archHuffman);
     for (int i=0;i< CantPalabras;i++){
-            fread(&(VCodigos[i].Codigos),LongCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
-            fread(&(VCodigos[i].largoCadenaHuffman),sizeof(char),1,archHuffman);
-            fread(&(VCodigos[i].cadenaHuffmanBinario),sizeof(int),1,archHuffman);
-            TraductorAString(VCodigos[i].cadenaHuffmanString, VCodigos[i].largoCadenaHuffman, VCodigos[i].cadenaHuffmanBinario));
+        fread(&(VCodigos[i].Codigos),LongCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
+        fread(&(VCodigos[i].largoCadenaHuffman),sizeof(int),1,archHuffman);
+        fread(&(VCodigos[i].cadenaHuffmanBinario),sizeof(int),1,archHuffman);
+        TraductorAString(VCodigos[i].cadenaHuffmanString, VCodigos[i].largoCadenaHuffman, VCodigos[i].cadenaHuffmanBinario);
     }
     fread(&tamanio,sizeof(int),1,archHuffman);
+    fread(&tamanio,sizeof(int),1,archHuffman);
+    
     postamanio=ftell(archHuffman);
     fclose(archHuffman);
     DecodificarBodyConHuffman(LongCaracter,CantPalabras,archivoFinal,archivoResultado,VCodigos,tamanio, postamanio);
 }
 
 void TraductorAString( char cadena[], char largo, int cadenaBinaria){
-
-
-    strcpy(V)
+    char auxCadena[MAXCADENA] = "";
+    cadenaBinaria <<= (32-largo);
+    for(int i=0 ; i < largo ; i++){
+        auxCadena[i] = cadenaBinaria & 0x80000000;
+        cadenaBinaria <<= 1;
+    }
+    strcpy(cadena,auxCadena);
 }
+
 void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[],int tamanioKB, int postamanio){
     FILE * archHuffman;
     FILE * archRes;
     archHuffman = fopen(archivoFinal,"rb");
     archRes=fopen(archivoResultado,"w+");
-    int bytesleidos,auxiliar,pos,bitsCompletados=0;
+    int bytesleidos,auxiliar,pos,bitsCompletados=0, ultimaLinea;
     char cadenaHuffman[MAXCADENA];
     int tamanio= tamanioKB*1024; //Tamaño en bytes
     //redondearlo;
@@ -148,6 +157,26 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
         }   
         bitsCompletados=0;
     }
+    ultimaLinea = tamanio % 4;
+    if (ultimaLinea){ //los ultimos 4 bytes del archivo, que pueden no ser en su totalidad bits para Huffman
+        fread(&bytesleidos,sizeof(int),1,archHuffman);
+        while(bitsCompletados<=ultimaLinea){ // lee solo los bit para huffman
+            auxiliar=bytesleidos & 0x80000000; 
+            if(auxiliar==1)
+                strcat(cadenaHuffman,"1");
+            else
+                strcat(cadenaHuffman,"0");
+            pos=BusquedaHuffman(VCodigos,cadenaHuffman,CantPalabras);
+            if(pos!=-1){//Lo encuentra
+                fwrite(VCodigos[pos].Codigos,strlen(VCodigos[pos].Codigos),1,archRes);
+                strcpy(cadenaHuffman,"");
+            }
+            bitsCompletados++;
+            auxiliar<<=1;
+        }
+    }
+    fclose(archHuffman);
+    fclose(archRes);
 }
 
 void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales, char archivoInicial[]){
@@ -357,7 +386,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
                     sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
                 }
                 if(bitsCompletados==32){
-                    bitsCompletados==0;
+                    bitsCompletados=0;
                     fwrite(&auxiliar,sizeof(int),1,archFin);
                     bitsTotales+=32;
             }
@@ -383,8 +412,9 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             fwrite(&auxiliar,sizeof(int),1,archFin);
         }
         kbytesTotales = bitsTotales / 8. / 1024.;
+        kbytesTotales = bitsTotales;
         fseek(archFin, posTamanio, SEEK_SET);
-        fwrite(&kbytesTotales,4,1,archFin);
+        fwrite(&kbytesTotales,4,1,archFin); 
     }
     fclose(archIni);
     fclose(archFin);
@@ -500,18 +530,16 @@ void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int lon
         printf("Error al abrir el archivo para escribir los headers");
     } 
     else {
-        byteLongCaracter = longCaracter << 24; //se graba 1 byte, int = 4bytes --->desplazo 3 bytes = 24 bits (hasta 255)
-        byteCantPalabras = cantPalabras << 16; //(hasta 65,535)
-        fwrite(&byteLongCaracter,1,1,archHuffman); 
-        fwrite(&byteCantPalabras,2,1,archHuffman);
+        fwrite(&longCaracter,sizeof(int),1,archHuffman); 
+        fwrite(&cantPalabras,sizeof(int),1,archHuffman);
         for (int i=0;i< cantPalabras;i++){
             fwrite(&(VCodigos[i].Codigos),longCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
-            auxHuffman = strlen(VCodigos[i].cadenaHuffman)<<24; 
-            fwrite(&auxHuffman,1,1,archHuffman); //longitud codigo huffman
+            //auxHuffman = strlen(VCodigos[i].cadenaHuffman)<<24; 
+            fwrite(&auxHuffman,4,1,archHuffman); //longitud codigo huffman
             auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
             fwrite(&auxHuffman,4,1,archHuffman); //codigo de huffman en un entero
         }
-        fwrite(0,4,1,archHuffman); // dejo 4 bytes para poner el tamanio del archivo
+        fwrite(NULL,4,1,archHuffman); // dejo 4 bytes para poner el tamanio del archivo
         fclose(archHuffman);
     }
 }
