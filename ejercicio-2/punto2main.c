@@ -6,7 +6,6 @@
 #define MAXVEC 10000
 #define MAXCARCT 10
 #define MAXCADENA 30
-
 struct nodoCodigo{
     int FrecCodigos; //Cant repeticiones en el txt
     char Codigos[MAXCARCT]; //Ej: AAA
@@ -57,7 +56,7 @@ void sumadorBinario(int* , int* , char  [],int );
 int traductorBinario(char cadena[]);
 void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int longCaracter,char archivoFinal[]);
 void DecodificarArchivoConHuffman(char  [], char []);
-void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [],int , int );
+void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [],float , int );
 int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
 void TraductorAString( char cadena[], char largo, int cadenaBinaria);
 
@@ -70,7 +69,7 @@ int main(){
     float EntropiaTotal, cantInfoTotal;
     /*printf("ingrese la longitud de los caracteres");
     scanf("%d",&LongCaracter);*/
-    char archivoInicial[MAXCADENA]="prueba1.txt"; //juego-catedra.txt
+    char archivoInicial[MAXCADENA]="juego-catedra.txt";
     char archivoFinal[MAXCADENA]="prueba2.dat";
     char archivoResultado[MAXCADENA]="resultado.txt";
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales,archivoInicial);
@@ -95,8 +94,8 @@ int main(){
 
 void DecodificarArchivoConHuffman(char archivoFinal [], char archivoResultado []){
 
-    int tamanio,postamanio, LongCaracter, CantPalabras;
-    
+    int postamanio, LongCaracter, CantPalabras;
+    float tamanio;
     FILE * archHuffman;
     struct nodoCodigoDecodificador VCodigos[MAXVEC];
     archHuffman = fopen(archivoFinal,"rb");
@@ -109,39 +108,45 @@ void DecodificarArchivoConHuffman(char archivoFinal [], char archivoResultado []
         fread(&(VCodigos[i].cadenaHuffmanBinario),sizeof(int),1,archHuffman);
         TraductorAString(VCodigos[i].cadenaHuffmanString, VCodigos[i].largoCadenaHuffman, VCodigos[i].cadenaHuffmanBinario);
     }
-    fread(&tamanio,sizeof(int),1,archHuffman);
-    fread(&tamanio,sizeof(int),1,archHuffman);
-    
+    fread(&tamanio,sizeof(float),1,archHuffman);
+    tamanio=tamanio*1024;
     postamanio=ftell(archHuffman);
     fclose(archHuffman);
     DecodificarBodyConHuffman(LongCaracter,CantPalabras,archivoFinal,archivoResultado,VCodigos,tamanio, postamanio);
 }
 
 void TraductorAString( char cadena[], char largo, int cadenaBinaria){
-    char auxCadena[MAXCADENA] = "";
+    char auxCadena[MAXCADENA] ;
+    int auxiliar,i;
     cadenaBinaria <<= (32-largo);
-    for(int i=0 ; i < largo ; i++){
-        auxCadena[i] = cadenaBinaria & 0x80000000;
-        cadenaBinaria <<= 1;
+    for(i=0 ; i < largo ; i++){
+        auxiliar = (cadenaBinaria & 0x80000000)>>31;
+        if((auxiliar)==0){ //ES bit UNO
+                auxCadena[i]='0';
+            }
+            else{ //ES bit CERO
+                auxCadena[i]='1';
+            }
+        cadenaBinaria<<=1;
     }
+    auxCadena[i]='\0';
     strcpy(cadena,auxCadena);
 }
 
-void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[],int tamanioKB, int postamanio){
+void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[],float tamanio, int postamanio){
     FILE * archHuffman;
     FILE * archRes;
     archHuffman = fopen(archivoFinal,"rb");
     archRes=fopen(archivoResultado,"w+");
     int bytesleidos,auxiliar,pos,bitsCompletados=0, ultimaLinea;
-    char cadenaHuffman[MAXCADENA];
-    int tamanio= tamanioKB*1024; //Tamaño en bytes
-    //redondearlo;
+    float ultimosbits;
+    char cadenaHuffman[MAXCADENA]="\0";
     fseek(archHuffman,postamanio,SEEK_SET);
     for(int i=0; i<(int) tamanio/4; i++){//Analiza todas las lineas excepto la ultima que es probable que este incompleta
         fread(&bytesleidos,sizeof(int),1,archHuffman);
         while(bitsCompletados<=32){
             auxiliar=bytesleidos & 0x80000000; 
-            if(auxiliar==1){ //ES bit UNO
+            if(auxiliar!=0){ //ES bit UNO
                 strcat(cadenaHuffman,"1");
             }
             else{ //ES bit CERO
@@ -157,12 +162,14 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
         }   
         bitsCompletados=0;
     }
-    ultimaLinea = tamanio % 4;
+    ultimosbits=tamanio * 8;
+    round(ultimosbits);
+    ultimaLinea = (int)ultimosbits%32;
     if (ultimaLinea){ //los ultimos 4 bytes del archivo, que pueden no ser en su totalidad bits para Huffman
         fread(&bytesleidos,sizeof(int),1,archHuffman);
-        while(bitsCompletados<=ultimaLinea){ // lee solo los bit para huffman
+        while(bitsCompletados<ultimaLinea){ // lee solo los bit para huffman
             auxiliar=bytesleidos & 0x80000000; 
-            if(auxiliar==1)
+            if(auxiliar!=0)
                 strcat(cadenaHuffman,"1");
             else
                 strcat(cadenaHuffman,"0");
@@ -172,7 +179,7 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
                 strcpy(cadenaHuffman,"");
             }
             bitsCompletados++;
-            auxiliar<<=1;
+            bytesleidos<<=1;
         }
     }
     fclose(archHuffman);
@@ -330,8 +337,8 @@ void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras){
 
 void GenerarCadenas(struct nodoCodigo VCodigos[], Tarbol a, char cadena []){
     int indice;
-    char cadenaAuxiliar1[MAXCADENA];
-    char cadenaAuxiliar2[MAXCADENA];
+    char cadenaAuxiliar1[MAXCADENA]="\0";
+    char cadenaAuxiliar2[MAXCADENA]="\0";
     strcpy(cadenaAuxiliar1,cadena);
     strcpy(cadenaAuxiliar2,cadena);
     if (a!=NULL){
@@ -348,8 +355,9 @@ void GenerarCadenas(struct nodoCodigo VCodigos[], Tarbol a, char cadena []){
 
 int Busqueda(struct nodoCodigo VCodigos[], char palabra []){
     int i=0;
-    while(strcmp(VCodigos[i].Codigos,palabra)!=0)
+    while(strcmp(VCodigos[i].Codigos,palabra)!=0){
         i++;
+    }
     return i;
 }
 int BusquedaHuffman(struct nodoCodigoDecodificador VCodigos[], char cadenaHuffman [],int CantPalabras){
@@ -412,9 +420,8 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             fwrite(&auxiliar,sizeof(int),1,archFin);
         }
         kbytesTotales = bitsTotales / 8. / 1024.;
-        kbytesTotales = bitsTotales;
         fseek(archFin, posTamanio, SEEK_SET);
-        fwrite(&kbytesTotales,4,1,archFin); 
+        fwrite(&kbytesTotales,sizeof(float),1,archFin); 
     }
     fclose(archIni);
     fclose(archFin);
@@ -534,12 +541,12 @@ void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int lon
         fwrite(&cantPalabras,sizeof(int),1,archHuffman);
         for (int i=0;i< cantPalabras;i++){
             fwrite(&(VCodigos[i].Codigos),longCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
-            //auxHuffman = strlen(VCodigos[i].cadenaHuffman)<<24; 
+            auxHuffman = strlen(VCodigos[i].cadenaHuffman); 
             fwrite(&auxHuffman,4,1,archHuffman); //longitud codigo huffman
             auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
             fwrite(&auxHuffman,4,1,archHuffman); //codigo de huffman en un entero
         }
-        fwrite(NULL,4,1,archHuffman); // dejo 4 bytes para poner el tamanio del archivo
+        fwrite(&auxHuffman,4,1,archHuffman); // dejo 4 bytes para poner el tamanio del archivo
         fclose(archHuffman);
     }
 }
