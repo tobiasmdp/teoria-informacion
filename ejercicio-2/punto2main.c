@@ -59,6 +59,7 @@ int traductorBinario(char cadena[]);
 void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int longCaracter,char archivoFinal[]);
 void DecodificarArchivoConHuffman(char  [], char []);
 void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [],float , int );
+
 int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
 void TraductorAString( char cadena[], char largo, int cadenaBinaria);
 
@@ -435,14 +436,13 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             }
             }
             else{// Inserto una particion
-                libre=bitsCompletados+strlen(auxString)-32;
                 for(i=0;i<32-bitsCompletados;i++){
                     sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
                 }
+                bitsCompletados=0;
                 fwrite(&auxiliar,sizeof(int),1,archFin);
                 bitsTotales+=32;
-                bitsCompletados=libre;
-                for(i=0;i<libre;i++){
+                for(i=0;i<bitsCompletados+strlen(auxString)-32;i++){
                     sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
                 }
             }
@@ -545,7 +545,7 @@ void TraductorAString( char cadena[], char largo, int cadenaBinaria){
 }
 /*Posible borrado*/
 
-/*void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[],int tamanioKB, int postamanio){
+void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[],float tamanioKB, int postamanio){
     FILE * archHuffman;
     FILE * archRes;
     archHuffman = fopen(archivoFinal,"rb");
@@ -595,4 +595,4 @@ void TraductorAString( char cadena[], char largo, int cadenaBinaria){
     }
     fclose(archHuffman);
     fclose(archRes);
-} */
+} 
