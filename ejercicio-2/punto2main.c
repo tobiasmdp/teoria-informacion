@@ -5,9 +5,9 @@
 
 /*Constantes*/
 
-#define MAXVEC 1000
+#define MAXVEC 700
 #define MAXCARCT 10
-#define MAXCADENA 1000
+#define MAXCADENA 700
 
 /*Estructuras*/
 
@@ -431,6 +431,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
                         bitsCompletados=0;
                         fwrite(&auxiliar,sizeof(int),1,archFin);
                         bitsTotales+=32;
+                    }
                 }
             }
             fread(&lect,sizeof(char),LongCaracter,archIni);
