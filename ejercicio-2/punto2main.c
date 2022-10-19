@@ -412,6 +412,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
     char lect[MAXCARCT];
     char auxString[MAXCADENA];
     float kbytesTotales;
+    int repeticiones;
     archIni=fopen(archivoInicial,"rt");
     archFin=fopen(archivoFinal,"rb+"); // no funciona con append tampoco
     if(archIni==NULL)
@@ -421,31 +422,19 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
         fseek(archFin,0,SEEK_END);
         posTamanio = ftell(archFin)-4; //guarda 4 bytes atras, donde arranca el espacio para escribir el tamanio
         while(!feof(archIni)){
-
             indice=Busqueda(VCodigos,lect);
             strcpy(auxString,VCodigos[indice].cadenaHuffman);
-            int repeticiones=0;
-            if(bitsCompletados+strlen(auxString)<=32){//Que puedo insertarlo tranquilo
-                for(i=0;i<strlen(auxString);i++){
-                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
+            for(i=0;i<strlen(auxString);i++){
+                        auxiliar<<=1;
+                        bitsCompletados+=1;  
+                        if(lect[i]=='1')
+                            auxiliar+=1; 
+                        if(bitsCompletados==32){
+                            bitsCompletados=0;
+                            fwrite(&auxiliar,sizeof(int),1,archFin);
+                            bitsTotales+=32;
                 }
-                if(bitsCompletados==32){
-                    bitsCompletados=0;
-                    fwrite(&auxiliar,sizeof(int),1,archFin);
-                    bitsTotales+=32;
             }
-            }
-            else{// Inserto una particion
-                libre=bitsCompletados+strlen(auxString)-32;
-                for(i=0;i<32-bitsCompletados;i++){
-                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
-                }
-                fwrite(&auxiliar,sizeof(int),1,archFin);
-                bitsTotales+=32;
-                bitsCompletados=libre;
-                for(i=0;i<libre;i++){
-                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);
-                }
             }
             fread(&lect,sizeof(char),LongCaracter,archIni);
             
@@ -459,9 +448,19 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
         kbytesTotales = bitsTotales;
         fseek(archFin, posTamanio, SEEK_SET);
         fwrite(&kbytesTotales,4,1,archFin); 
-    }
     fclose(archIni);
     fclose(archFin);
+}
+
+/*Posible borrado*/
+void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
+    
+    if(bitsCompletados==32){
+        bitsCompletados=0;
+        fwrite(&auxiliar,sizeof(int),1,archFin);
+        bitsTotales+=32;
+    }
+    
 }
 
 /*traduce strings a binario*/
@@ -489,13 +488,7 @@ int BusquedaHuffman(struct nodoCodigoDecodificador VCodigos[], char cadenaHuffma
 }
 
 
-/*Posible borrado*/
-void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
-    (*auxiliar)<<=1;
-    *bitsCompletados+=1;
-    if(lect[i]=='1')
-        *auxiliar+=1; 
-}
+
 
 
 
