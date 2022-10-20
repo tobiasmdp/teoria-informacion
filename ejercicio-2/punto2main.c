@@ -5,9 +5,9 @@
 
 /*Constantes*/
 
-#define MAXVEC 2000
+#define MAXVEC 700
 #define MAXCARCT 10
-#define MAXCADENA 1428
+#define MAXCADENA 700
 
 /*Estructuras*/
 
@@ -67,7 +67,7 @@ void TraductorAString( char cadena[], char largo, int cadenaBinaria);
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int CantPalabras=0;
-    int LongCaracter=3; //variande este parametro se consideran las cadenas de diferentes largos
+    int LongCaracter=7; //variande este parametro se consideran las cadenas de diferentes largos
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     /*printf("ingrese la longitud de los caracteres");
@@ -424,20 +424,17 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
         while(!feof(archIni)){
             indice=Busqueda(VCodigos,lect);
             strcpy(auxString,VCodigos[indice].cadenaHuffman);
-            for(i=0;i<strlen(auxString);i++){
-                        auxiliar<<=1;
-                        bitsCompletados+=1;  
-                        if(lect[i]=='1')
-                            auxiliar+=1; 
-                        if(bitsCompletados==32){
-                            bitsCompletados=0;
-                            fwrite(&auxiliar,sizeof(int),1,archFin);
-                            bitsTotales+=32;
+            if(bitsCompletados+strlen(auxString)<=32){//Que puedo insertarlo tranquilo
+                for(i=0;i<strlen(auxString);i++){
+                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
+                    if(bitsCompletados==32){
+                        bitsCompletados=0;
+                        fwrite(&auxiliar,sizeof(int),1,archFin);
+                        bitsTotales+=32;
+                    }
                 }
             }
-            }
             fread(&lect,sizeof(char),LongCaracter,archIni);
-            
         }
         if(bitsCompletados!=32){
             bitsTotales+=bitsCompletados;
@@ -452,15 +449,12 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
     fclose(archFin);
 }
 
-/*Posible borrado*/
+
 void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
-    
-    if(bitsCompletados==32){
-        bitsCompletados=0;
-        fwrite(&auxiliar,sizeof(int),1,archFin);
-        bitsTotales+=32;
-    }
-    
+    (*auxiliar)<<=1;
+    *bitsCompletados+=1;
+    if(lect[i]=='1')
+        *auxiliar+=1; 
 }
 
 /*traduce strings a binario*/
