@@ -16,11 +16,6 @@ struct nodoCodigo{
     char cadenaHuffman[MAXCADENA];
 };
 
-/*typedef struct nodo{
-  Tarbol arbol;
-  struct nodo *sig;} nodo;
-typedef nodo * TLista;*/
-
 typedef struct nodo {
     char dato[MAXCARCT];
     float prob;
@@ -72,6 +67,7 @@ int main(){
     printf("su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
     printf("su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
     creacionHuffman (VCodigos,CantPalabras);
+    MostrarVector(VCodigos,CantPalabras);
     escribirEncabezado(VCodigos,CantPalabras,LongCaracter,archivoFinal);
     EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
     return 0;
@@ -184,7 +180,7 @@ void creacionHuffman (struct nodoCodigo VCodigos[], int CantPalabras){
     int posmin1,posmin2, sumcantarb;
     Tarbol VArbol[MAXVEC]={NULL};
     int cantarboles=0,arbtemp=0;
-    int ant=0,sig;
+    int ant=0,sig=0;
     while (ant<CantPalabras){ //esto es para agregar todas las hojas
         if(sig==CantPalabras)
             sig=-1;
