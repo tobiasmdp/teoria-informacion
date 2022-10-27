@@ -77,7 +77,7 @@ int main(){
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     Tarbol arbolHuffman;
-    char archivoInicial[MAXCADENA]="juego-catedra.txt"; //juego-catedra.txt
+    char archivoInicial[MAXVEC]="D://Facultad//teoria-informacion//ejercicio-1//juego-catedra.txt"; //juego-catedra.txt
     char archivoFinal[MAXCADENA];
     char archivoResultado[MAXCADENA]="resultado.txt";
     printf("Ingrese la longitud de las palabras \n");
@@ -286,7 +286,7 @@ int escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int Long
             auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
             fwrite(&auxHuffman,sizeof(int),1,archBin); //codigo de huffman en un entero
         }
-        fwrite(&auxHuffman,sizeof(int),1,archBin); // dejo 4 bytes para poner el tamanio del archivo
+        fwrite(&auxHuffman,sizeof(int),1,archBin); // dejo 4 bytes para poner el tamanio del archivo mas tarde
         fclose(archBin);
         exito = 1;
     }
@@ -467,12 +467,12 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
         }   
         bitsCompletados=0;
     }
-    ultimaLinea = tamanio % 4;
+    ultimaLinea = tamanio % 32;
     if (ultimaLinea){ //los ultimos 4 bytes del archivo, que pueden no ser en su totalidad bits para Huffman
         fread(&bytesleidos,sizeof(int),1,archHuffman);
         while(bitsCompletados<=ultimaLinea){ // lee solo los bit para huffman
             auxiliar=bytesleidos & 0x80000000; 
-            if(auxiliar==1)
+            if(auxiliar!=0)
                 strcat(cadenaHuffman,"1");
             else
                 strcat(cadenaHuffman,"0");
@@ -482,7 +482,7 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
                 strcpy(cadenaHuffman,"");
             }
             bitsCompletados++;
-            auxiliar<<=1;
+            bytesleidos<<=1;
         }
     }
     fclose(archHuffman);
