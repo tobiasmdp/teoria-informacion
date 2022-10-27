@@ -17,6 +17,13 @@ struct nodoCodigo{
     char cadenaHuffman[MAXCADENA]; //10101011
 };
 
+struct nodoCodigoDecodificador{
+        char Codigos[MAXCADENA]; //Ej: AAA
+        char largoCadenaHuffman; //Ej: Si la cadena de huffman es 0101 el largo es un int =3
+        int cadenaHuffmanBinario;// Ej:  01010
+        char cadenaHuffmanString [MAXCADENA]; //EJ: 01010/0 en string
+};
+
 typedef struct nodoA {
     char dato[MAXCARCT];
     int frec;
@@ -56,7 +63,12 @@ void sumadorBinario(int* , int* , char  [],int );
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
 // testing functions
 void printBits(size_t const size, void const * const ptr);
+//Decodificacion
+void DecodificarArchivoConHuffman(char  [], char []);
+void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [] , int );
+int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
 
+void TraductorAString( char [], char, int );
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int exito; //usado para verificar si se escribio correctamente el encabezado del archivo binario
@@ -67,6 +79,7 @@ int main(){
     Tarbol arbolHuffman;
     char archivoInicial[MAXCADENA]="juego-catedra.txt"; //juego-catedra.txt
     char archivoFinal[MAXCADENA];
+    char archivoResultado[MAXCADENA]="resultado.txt";
     printf("Ingrese la longitud de las palabras \n");
     scanf("%d",&LongCaracter);
     snprintf(archivoFinal,MAXCADENA,"huffman-%d.dat",LongCaracter);
@@ -86,6 +99,10 @@ int main(){
     exito = escribirEncabezado(VCodigos,CantPalabras,LongCaracter,archivoFinal);
     if (exito != -1)
         EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
+    //Decodificacion
+    DecodificarArchivoConHuffman(archivoFinal,archivoResultado);
+
+    
     return exito;
 }
 
@@ -368,3 +385,105 @@ void printBits(size_t const size, void const * const ptr)
     }
     //puts("");
 }
+
+
+/*------------------------------------------------------------------------------- Decodificacion --------------------------------------------------------------------------------------*/
+/*Posible borrado*/
+void DecodificarArchivoConHuffman(char archivoFinal [], char archivoResultado []){
+
+    int postamanio, LongCaracter, CantPalabras;
+    
+    FILE * archHuffman;
+    struct nodoCodigoDecodificador VCodigos[MAXVEC];
+    archHuffman = fopen(archivoFinal,"rb");
+
+    fread(&LongCaracter,sizeof(int),1,archHuffman); 
+    fread(&CantPalabras,sizeof(int),1,archHuffman);
+    for (int i=0;i< CantPalabras;i++){
+        fread(&(VCodigos[i].Codigos),LongCaracter,1,archHuffman); //escribe la palabra, ej ABA o ABAAB
+        fread(&(VCodigos[i].largoCadenaHuffman),sizeof(int),1,archHuffman);
+        fread(&(VCodigos[i].cadenaHuffmanBinario),sizeof(int),1,archHuffman);
+        TraductorAString(VCodigos[i].cadenaHuffmanString, VCodigos[i].largoCadenaHuffman, VCodigos[i].cadenaHuffmanBinario);
+    }
+    postamanio=ftell(archHuffman);
+    fclose(archHuffman);
+    DecodificarBodyConHuffman(LongCaracter,CantPalabras,archivoFinal,archivoResultado,VCodigos, postamanio);
+}
+/*Posible borrado*/
+void TraductorAString( char cadena[], char largo, int cadenaBinaria){
+    char auxCadena[MAXCADENA] = "";
+    cadenaBinaria <<= (32-largo);
+    for(int i=0 ; i < largo ; i++){
+        if(cadenaBinaria & 0x80000000)
+            auxCadena[i] = '1';
+        else
+            auxCadena[i] = '0';
+        cadenaBinaria <<= 1;
+    }
+    strcpy(cadena,auxCadena);
+}
+
+/*Posible borrado*/
+int BusquedaHuffman(struct nodoCodigoDecodificador VCodigos[], char cadenaHuffman [],int CantPalabras){
+    int i=0;
+    while( i<CantPalabras && strcmp(VCodigos[i].cadenaHuffmanString,cadenaHuffman)!=0)
+        i++;
+    if(i==CantPalabras )
+        return -1;
+    else
+        return i;
+}
+
+/*Posible borrado*/
+
+void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabras,char archivoFinal[],char archivoResultado [],struct nodoCodigoDecodificador VCodigos[], int postamanio){
+    FILE * archHuffman;
+    FILE * archRes;
+    archHuffman = fopen(archivoFinal,"rb");
+    archRes=fopen(archivoResultado,"w+");
+    int tamanio, bytesleidos,auxiliar,pos,bitsCompletados=0, ultimaLinea;
+    char cadenaHuffman[MAXCADENA]={};
+    //redondearlo;
+    fseek(archHuffman,postamanio,SEEK_SET);
+    fread(&tamanio,sizeof(int),1,archHuffman);
+    for(int i=0; i<(int) tamanio/32; i++){//Analiza todas las lineas excepto la ultima que es probable que este incompleta
+        fread(&bytesleidos,sizeof(int),1,archHuffman);
+        while(bitsCompletados<=32){
+            auxiliar=bytesleidos & 0x80000000; 
+            if(auxiliar!=0){ //ES bit UNO
+                strcat(cadenaHuffman,"1");
+            }
+            else{ //ES bit CERO
+                strcat(cadenaHuffman,"0");
+            }
+            pos=BusquedaHuffman(VCodigos,cadenaHuffman,CantPalabras);
+            if(pos!=-1){//Lo encuentra
+                fwrite(VCodigos[pos].Codigos,strlen(VCodigos[pos].Codigos),1,archRes);
+                strcpy(cadenaHuffman,"");
+            }
+            bitsCompletados++;
+            bytesleidos<<=1;
+        }   
+        bitsCompletados=0;
+    }
+    ultimaLinea = tamanio % 4;
+    if (ultimaLinea){ //los ultimos 4 bytes del archivo, que pueden no ser en su totalidad bits para Huffman
+        fread(&bytesleidos,sizeof(int),1,archHuffman);
+        while(bitsCompletados<=ultimaLinea){ // lee solo los bit para huffman
+            auxiliar=bytesleidos & 0x80000000; 
+            if(auxiliar==1)
+                strcat(cadenaHuffman,"1");
+            else
+                strcat(cadenaHuffman,"0");
+            pos=BusquedaHuffman(VCodigos,cadenaHuffman,CantPalabras);
+            if(pos!=-1){//Lo encuentra
+                fwrite(VCodigos[pos].Codigos,strlen(VCodigos[pos].Codigos),1,archRes);
+                strcpy(cadenaHuffman,"");
+            }
+            bitsCompletados++;
+            auxiliar<<=1;
+        }
+    }
+    fclose(archHuffman);
+    fclose(archRes);
+} 
