@@ -15,7 +15,7 @@ struct nodoCodigo{
     float probabilidades; //prob de aparicion
     float entropia; 
     float cantInfo;
-    char cadenaHuffman[MAXCADENA];
+    char cadenaHuffman[MAXCADENA]; //10101011
 };
 
 typedef struct nodoA {
@@ -49,6 +49,10 @@ void insertarListaOrdenada(TLista *cabeza, TLista nuevo);
 void sacaMinimos(TLista *cabeza, Tarbol *min1, Tarbol *min2);
 void GenerarCadenas(struct nodoCodigo VCodigos[], Tarbol a, char cadena []);
 int Busqueda(struct nodoCodigo VCodigos[], char palabra []);
+void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]);
+int traductorBinario(char cadena[]);
+void EscribirArchivoConHuffman(struct nodoCodigo [], int , int, char [], char []);
+void sumadorBinario(int* , int* , char  [],int ); 
 /*generales*/
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
 
@@ -59,9 +63,12 @@ int main(){
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     Tarbol arbolHuffman;
-    printf("ingrese la longitud de los caracteres \n");
-    scanf("%d",&LongCaracter);
     char archivoInicial[MAXCADENA]="juego-catedra.txt"; //juego-catedra.txt
+    char archivoFinal[MAXCADENA]="";
+    printf("Ingrese la longitud de las palabras \n");
+    scanf("%d",&LongCaracter);
+    generaNombreArchivoFinal(archivoFinal, LongCaracter);
+
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales,archivoInicial);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
     CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
@@ -74,7 +81,8 @@ int main(){
     cracionArbolHuffman(&arbolHuffman,VCodigos,CantPalabras);
     GenerarCadenas(VCodigos,arbolHuffman,"");
     MostrarVector(VCodigos,CantPalabras);
-    
+    escribirEncabezado(VCodigos,CantPalabras,LongCaracter,archivoFinal);
+    EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
     return 0;
 }
 
@@ -239,6 +247,92 @@ int Busqueda(struct nodoCodigo VCodigos[], char palabra []){
     return i;
 }
 
+
+void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]){
+    FILE* archBin;
+    int auxHuffman;
+    char palHuffman[MAXCADENA];
+    archBin = fopen(archivoFinal,"wb");
+    if (!archBin){
+        printf("Error al abrir el archivo para escribir los headers");
+    } 
+    else {
+        fwrite(&LongCaracter,sizeof(int),1,archBin); 
+        fwrite(&cantPalabras,sizeof(int),1,archBin);
+        for (int i=0;i< cantPalabras;i++){
+            fwrite(&(VCodigos[i].Codigos),LongCaracter,1,archBin); //escribe la palabra, ej ABA o ABAAB
+            auxHuffman = strlen(VCodigos[i].cadenaHuffman); 
+            fwrite(&auxHuffman,sizeof(int),1,archBin); //longitud codigo huffman
+            auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
+            fwrite(&auxHuffman,sizeof(int),1,archBin); //codigo de huffman en un entero
+        }
+        fwrite(&auxHuffman,sizeof(float),1,archBin); // dejo 4 bytes para poner el tamanio del archivo
+        fclose(archBin);
+    }
+}
+
+int traductorBinario(char cadena[]){
+    int largo = strlen(cadena), resultado=0;
+    for (int i = 0; i<largo; i++){
+        resultado<<=1;
+        if(cadena[i] == '1'){
+            resultado++;
+        }
+    }
+    return resultado;
+}
+
+void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter, char archivoInicial[], char archivoFinal[]){
+    FILE* archIni, *archFin;
+    int indice,i,bitsCompletados=0,auxiliar,libre,bitsTotales=0,posTamanio;
+    char lect[MAXCARCT];
+    char auxString[MAXCADENA];
+    float kbytesTotales;
+    int repeticiones;
+    archIni=fopen(archivoInicial,"rt");
+    archFin=fopen(archivoFinal,"rb+"); 
+    if(archIni==NULL)
+        printf("Error: No existe el archivo de texto");
+    else{
+        fread(&lect,sizeof(char),LongCaracter,archIni);
+        fseek(archFin,0,SEEK_END);
+        posTamanio = ftell(archFin)- sizeof(float); //guarda posicion 4 bytes atras (= sizeof(float)) , donde arranca el espacio para escribir el tamanio
+        while(!feof(archIni)){
+            indice=Busqueda(VCodigos,lect);
+            strcpy(auxString,VCodigos[indice].cadenaHuffman);
+            if(bitsCompletados+strlen(auxString)<=32){//Que puedo insertarlo tranquilo
+                for(i=0;i<strlen(auxString);i++){
+                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
+                    if(bitsCompletados==32){
+                        bitsCompletados=0;
+                        fwrite(&auxiliar,sizeof(int),1,archFin);
+                        bitsTotales+=32;
+                    }
+                }
+            }
+            fread(&lect,sizeof(char),LongCaracter,archIni);
+        }
+        if(bitsCompletados!=32){
+            bitsTotales+=bitsCompletados;
+            auxiliar<<=32-bitsCompletados;
+            fwrite(&auxiliar,sizeof(int),1,archFin);
+        }
+        kbytesTotales = bitsTotales / 8. / 1024.;
+        kbytesTotales = bitsTotales;
+        fseek(archFin, posTamanio, SEEK_SET);
+        fwrite(&kbytesTotales,4,1,archFin); 
+    }
+    fclose(archIni);
+    fclose(archFin);
+}
+
+
+void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
+    (*auxiliar)<<=1;
+    *bitsCompletados+=1;
+    if(lect[i]=='1')
+        *auxiliar+=1; 
+}
 /*------------------------------------------------------------------------------- global --------------------------------------------------------------------------------------*/
 
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras){
