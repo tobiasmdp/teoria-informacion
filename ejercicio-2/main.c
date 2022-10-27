@@ -334,6 +334,7 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
             }
             fread(&lect,sizeof(char),LongCaracter,archIni);
             lect[LongCaracter] = '\0';//se marca el fin de cadena
+            
         }
         if(bitsCompletados!=0){
             bitsTotales+=bitsCompletados;
