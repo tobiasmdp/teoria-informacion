@@ -1,7 +1,21 @@
 
-# Teoria de la informacion #H1
+# Teoria de la informacion 
+
+## Linux
+
+### Ejecucion
+
+    cd ejercicio-{numero}-{parte}-{inciso}
+    ./main.linux 
+
+### Compilacion
+
+*Los .c ya fueron compilados*
+
+    gcc main.c -o main.linux -lm
 
 ## Nomenclatura 
+
 Los ejercicios separados en carpetas nombradas segun la siguiente nomenclatura:
 ejercicio-{numero}-{parte}-{inciso}
 
@@ -10,4 +24,5 @@ ejercicio-{numero}-{parte}-{inciso}
 3. Inciso: Sub-indice de cada parte. *Caracter alfabetico minuscula*
 
 ## Integrantes
+
 Alejandro Olave, Mikel ; Giacri, Tobías ; Nievas, Nahuel Isaias
