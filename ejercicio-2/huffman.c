@@ -8,7 +8,6 @@
 #define MAXCADENA 30
 #define CANTSIMBOLOS 3
 
-
 struct nodoCodigo{
     int FrecCodigos; //Cant repeticiones en el txt
     char Codigos[MAXCARCT]; //Ej: AAA
@@ -49,41 +48,45 @@ void insertarListaOrdenada(TLista *cabeza, TLista nuevo);
 void sacaMinimos(TLista *cabeza, Tarbol *min1, Tarbol *min2);
 void GenerarCadenas(struct nodoCodigo VCodigos[], Tarbol a, char cadena []);
 int Busqueda(struct nodoCodigo VCodigos[], char palabra []);
-void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]);
+int escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]);
 int traductorBinario(char cadena[]);
 void EscribirArchivoConHuffman(struct nodoCodigo [], int , int, char [], char []);
 void sumadorBinario(int* , int* , char  [],int ); 
 /*generales*/
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
+// testing functions
+void printBits(size_t const size, void const * const ptr);
 
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
+    int exito; //usado para verificar si se escribio correctamente el encabezado del archivo binario
     int CantPalabras=0;
     int LongCaracter=0; //variande este parametro se consideran las cadenas de diferentes largos
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     Tarbol arbolHuffman;
     char archivoInicial[MAXCADENA]="juego-catedra.txt"; //juego-catedra.txt
-    char archivoFinal[MAXCADENA]="";
+    char archivoFinal[MAXCADENA];
     printf("Ingrese la longitud de las palabras \n");
     scanf("%d",&LongCaracter);
-    generaNombreArchivoFinal(archivoFinal, LongCaracter);
-
+    snprintf(archivoFinal,MAXCADENA,"huffman-%d.dat",LongCaracter);
+    
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales,archivoInicial);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
     CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
     if (checkCompacto(VCodigos,CantPalabras,LongCaracter))
-        printf("es compacto \n");
+        printf("Es compacto \n");
     else
-        printf("no es compacto \n");
-    printf("su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
-    printf("su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
+        printf("No es compacto \n");
+    printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracter*100,37);
+    printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracter))*100,37);
     cracionArbolHuffman(&arbolHuffman,VCodigos,CantPalabras);
     GenerarCadenas(VCodigos,arbolHuffman,"");
     MostrarVector(VCodigos,CantPalabras);
-    escribirEncabezado(VCodigos,CantPalabras,LongCaracter,archivoFinal);
-    EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
-    return 0;
+    exito = escribirEncabezado(VCodigos,CantPalabras,LongCaracter,archivoFinal);
+    if (exito != -1)
+        EscribirArchivoConHuffman(VCodigos,CantPalabras,LongCaracter,archivoInicial,archivoFinal);
+    return exito;
 }
 
 /*---------------------------------------------------------------analisis de los datos otorgados-------------------------------------------------------------------------------*/
@@ -248,13 +251,13 @@ int Busqueda(struct nodoCodigo VCodigos[], char palabra []){
 }
 
 
-void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]){
+int escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int LongCaracter,char archivoFinal[]){
     FILE* archBin;
-    int auxHuffman;
+    int auxHuffman, exito = -1;
     char palHuffman[MAXCADENA];
     archBin = fopen(archivoFinal,"wb");
     if (!archBin){
-        printf("Error al abrir el archivo para escribir los headers");
+        printf("Error: No se pudo abrir el archivo binario");
     } 
     else {
         fwrite(&LongCaracter,sizeof(int),1,archBin); 
@@ -266,9 +269,11 @@ void escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int Lon
             auxHuffman = traductorBinario(VCodigos[i].cadenaHuffman);
             fwrite(&auxHuffman,sizeof(int),1,archBin); //codigo de huffman en un entero
         }
-        fwrite(&auxHuffman,sizeof(float),1,archBin); // dejo 4 bytes para poner el tamanio del archivo
+        fwrite(&auxHuffman,sizeof(int),1,archBin); // dejo 4 bytes para poner el tamanio del archivo
         fclose(archBin);
+        exito = 1;
     }
+    return exito;
 }
 
 int traductorBinario(char cadena[]){
@@ -287,7 +292,6 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
     int indice,i,bitsCompletados=0,auxiliar,libre,bitsTotales=0,posTamanio;
     char lect[MAXCARCT];
     char auxString[MAXCADENA];
-    float kbytesTotales;
     int repeticiones;
     archIni=fopen(archivoInicial,"rt");
     archFin=fopen(archivoFinal,"rb+"); 
@@ -295,32 +299,33 @@ void EscribirArchivoConHuffman(struct nodoCodigo VCodigos[], int CantPalabras, i
         printf("Error: No existe el archivo de texto");
     else{
         fread(&lect,sizeof(char),LongCaracter,archIni);
+        lect[LongCaracter] = '\0'; //se marca el fin de cadena
         fseek(archFin,0,SEEK_END);
-        posTamanio = ftell(archFin)- sizeof(float); //guarda posicion 4 bytes atras (= sizeof(float)) , donde arranca el espacio para escribir el tamanio
+        posTamanio = ftell(archFin)- sizeof(int); //guarda posicion 4 bytes atras (= sizeof(int)) , donde arranca el espacio para escribir el tamanio
         while(!feof(archIni)){
             indice=Busqueda(VCodigos,lect);
             strcpy(auxString,VCodigos[indice].cadenaHuffman);
-            if(bitsCompletados+strlen(auxString)<=32){//Que puedo insertarlo tranquilo
-                for(i=0;i<strlen(auxString);i++){
-                    sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
-                    if(bitsCompletados==32){
-                        bitsCompletados=0;
-                        fwrite(&auxiliar,sizeof(int),1,archFin);
-                        bitsTotales+=32;
-                    }
+            // printf("%s",auxString); //printea los strings concatenados -------------------------borrar al entregar, solo para testing functions
+            for(i=0;i<strlen(auxString);i++){
+                sumadorBinario(&auxiliar,&bitsCompletados,auxString,i);   
+                if(bitsCompletados==32){
+                    bitsCompletados=0;
+                    // printBits(sizeof(int), &auxiliar); //printea la traduccion a binario de los enteros que se van a escribir en el binario ------------borrar al entregar, solo para testing functions
+                    fwrite(&auxiliar,sizeof(int),1,archFin);
+                    bitsTotales+=32;
                 }
             }
             fread(&lect,sizeof(char),LongCaracter,archIni);
+            lect[LongCaracter] = '\0';//se marca el fin de cadena
         }
-        if(bitsCompletados!=32){
+        if(bitsCompletados!=0){
             bitsTotales+=bitsCompletados;
             auxiliar<<=32-bitsCompletados;
             fwrite(&auxiliar,sizeof(int),1,archFin);
+            // printBits(sizeof(int), &auxiliar); //printea la traduccion a binario de los enteros que se van a escribir en el binario ------------borrar al entregar, solo para testing functions
         }
-        kbytesTotales = bitsTotales / 8. / 1024.;
-        kbytesTotales = bitsTotales;
         fseek(archFin, posTamanio, SEEK_SET);
-        fwrite(&kbytesTotales,4,1,archFin); 
+        fwrite(&bitsTotales,sizeof(int),1,archFin); 
     }
     fclose(archIni);
     fclose(archFin);
@@ -345,4 +350,21 @@ int i=0;
         printf("%20f ",VCodigos[i].entropia);
         printf("%20s \n",VCodigos[i].cadenaHuffman);
     }
+}
+
+/*------------------------------------------------------------------------------- testing functions --------------------------------------------------------------------------------------*/
+
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = size-1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+    //puts("");
 }
