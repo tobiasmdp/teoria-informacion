@@ -448,7 +448,7 @@ void  DecodificarBodyConHuffman(unsigned char LongCaracter,short int CantPalabra
     fread(&tamanio,sizeof(int),1,archHuffman);
     for(int i=0; i<(int) tamanio/32; i++){//Analiza todas las lineas excepto la ultima que es probable que este incompleta
         fread(&bytesleidos,sizeof(int),1,archHuffman);
-        while(bitsCompletados<=32){
+        while(bitsCompletados<32){
             auxiliar=bytesleidos & 0x80000000; 
             if(auxiliar!=0){ //ES bit UNO
                 strcat(cadenaHuffman,"1");
