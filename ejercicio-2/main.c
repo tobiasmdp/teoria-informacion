@@ -42,9 +42,12 @@ typedef NODOL *TLista;
 void LeeArch(struct nodoCodigo VCodigos[],int *CantPalabras,int LongCaracter, int * PalabrasTotales, char archivoInicial[]);
 int checkRepetido(char lect[MAXCARCT],struct nodoCodigo VCodigos[], int CantPalabras);
 void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  PalabrasTotales);
+void quickSort(struct nodoCodigo VCodigos[], int low, int high);
+int partition(struct nodoCodigo VCodigos[], int low, int high);
+void swap(struct nodoCodigo *a, struct nodoCodigo *b);
 
 /*punto a*/
-void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia, float *infoTotal);
+void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia);
 /*punto c*/
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter);
 /*punto e*/
@@ -77,16 +80,16 @@ int main(){
     int PalabrasTotales=0;
     float EntropiaTotal, cantInfoTotal;
     Tarbol arbolHuffman;
-    char archivoInicial[MAXVEC]="D://Facultad//teoria-informacion//ejercicio-1//juego-catedra.txt"; //juego-catedra.txt
+    char archivoInicial[MAXVEC]="juego-catedra.txt"; //juego-catedra.txt
     char archivoFinal[MAXCADENA];
     char archivoResultado[MAXCADENA]="resultado.txt";
     printf("Ingrese la longitud de las palabras \n");
     scanf("%d",&LongCaracter);
     snprintf(archivoFinal,MAXCADENA,"huffman-%d.dat",LongCaracter);
-    
     LeeArch(VCodigos,&CantPalabras,LongCaracter,&PalabrasTotales,archivoInicial);
+    quickSort(VCodigos, 0, CantPalabras - 1);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
-    CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal, &cantInfoTotal);
+    CalculaInformacionYEntropia(VCodigos,CantPalabras,LongCaracter,&EntropiaTotal);
     if (checkCompacto(VCodigos,CantPalabras,LongCaracter))
         printf("Es compacto \n");
     else
@@ -151,18 +154,40 @@ void CalculaProbabilidades(struct nodoCodigo VCodigos[],int CantPalabras, int  P
     }
 }
 
+void quickSort(struct nodoCodigo VCodigos[], int low, int high) {
+  if (low < high) {
+    int pi = partition(VCodigos, low, high);
+    quickSort(VCodigos, low, pi - 1);
+    quickSort(VCodigos, pi + 1, high);
+  }
+}
+int partition(struct nodoCodigo VCodigos[], int low, int high) {
+  int pivot = VCodigos[high].FrecCodigos;
+  int i = (low - 1);
+  for (int j = low; j < high; j++) {
+    if (VCodigos[j].FrecCodigos >= pivot) {
+      i++;
+      swap(&VCodigos[i], &VCodigos[j]);
+    }
+  }
+  swap(&VCodigos[i + 1], &VCodigos[high]);
+  return (i + 1);
+}
+void swap(struct nodoCodigo *a, struct nodoCodigo *b) {
+  struct nodoCodigo t = *a;
+  *a = *b;
+  *b = t;
+}
+
 /*-------------------------------------------------------------------------------punto a --------------------------------------------------------------------------------------*/
 
-void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia, float *infoTotal){
+void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia){
     *entropia=0;
-    *infoTotal=0;
     for (int i=0;i<CantPalabras;i++){
             VCodigos[i].cantInfo=(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)); //tambien se calcula la informacion
             VCodigos[i].entropia=VCodigos[i].probabilidades*VCodigos[i].cantInfo;
-            *infoTotal+= VCodigos[i].cantInfo;
             *entropia+=VCodigos[i].entropia;
     }
-    printf("Informacion Total: %f \n", *infoTotal);
     printf("Entropia Total: %f \n", *entropia);
 }
 
@@ -360,12 +385,13 @@ void sumadorBinario(int* auxiliar, int* bitsCompletados, char lect [], int i){
 
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras){
 int i=0;
-    printf("        Codigo           frecuencia            probablilidades            entropia          codigo huffman \n");
+    printf("            Codigo              frecuencia       probablilidades          entropia     informacion       codigo huffman \n");
     for (i=0;i<CantPalabras;i++){
         printf("%20s ",VCodigos[i].Codigos);
         printf("%20d ",VCodigos[i].FrecCodigos);
         printf("%20f ",VCodigos[i].probabilidades);
         printf("%20f ",VCodigos[i].entropia);
+        printf("%20f ",VCodigos[i].cantInfo);
         printf("%20s \n",VCodigos[i].cadenaHuffman);
     }
 }

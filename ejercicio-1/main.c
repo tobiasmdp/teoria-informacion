@@ -28,14 +28,6 @@ int main()
     LeeArch(Vsimbolos,cantidad,MContSimbolos,VContsimbolos);
     Resultados(MContSimbolos,cantidad,VContsimbolos);
     VectorEstacionario(MContSimbolos,cantidad,VContsimbolos);
-
-
-    float test[MAX][MAX] = {{0.1, 0.2, 0.2},{0.3, 0.2, 0.4},{0.6, 0.6, 0.4}};
-    float vec[MAX][MAX] = {{0.1818182, 0.1818182, 0.1818182},{ 0.3181818,  0.3181818,  0.3181818},{0.5, 0.5, 0.5}};
-    int canti = 3;
-    printf("\nLa entropia de la fuente es: %9.4f\n", CalcularEntropia(canti, vec, test));
-
-
     return 0;
 }
 
@@ -175,7 +167,7 @@ float CalcularEntropia(int cantidad,float VectorEstacionario[][MAX], float Matri
     for (int i = 0 ; i<cantidad ; i++){
         acum = 0;
         for (int j = 0 ; j<cantidad ; j++){
-            acum += MatrizTransicion[j][i] * (log10(1/MatrizTransicion[j][i])/log10(2)); //propiedad log base 2 de x = log base y de (x) / log en base y de 2, donde y = 10.
+            acum += MatrizTransicion[j][i] * (log10(1/MatrizTransicion[j][i])/log10(cantidad)); //propiedad log base 2 de x = log base y de (x) / log en base y de 2, donde y = 10.
         }
         entropia += VectorEstacionario[i][0] * acum; //uso solo la primera columna, que es el vector estacionario
     }
