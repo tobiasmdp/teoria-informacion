@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <unistd.h>
 #define  MAX 30
 
 /*Prototipos*/
@@ -14,6 +15,7 @@ void Resultados(int MContSimbolos [] [MAX],int cantidad, int VContsimbolos [] );
 void VectorEstacionario(int MContSimbolos [] [MAX],int cantidad,int VContsimbolos[]);
 int checkTolerancia(float MatrizNueva[][MAX],float MatrizActual[][MAX],int, float );
 float CalcularEntropia(int cantidad,float VectorEstacionario[][MAX], float MatrizTransicion[][MAX]);
+void clean_stdin(void);
 
 int main()
 {
@@ -94,8 +96,9 @@ void IngresoAbecedario(char Vsimbolos[],int *cantidad){
     int i;
     printf("Ingrese la cantidad de simbolos del alfabeto:\n ");
     scanf("%d",cantidad);
+
     for(i=0;i<*cantidad;i++){
-        fflush(stdin);
+        clean_stdin();
         printf("\n Ingrese simbolo numero %d:",i+1);
         scanf("%c",&Vsimbolos[i]);
     }
@@ -172,4 +175,12 @@ float CalcularEntropia(int cantidad,float VectorEstacionario[][MAX], float Matri
         entropia += VectorEstacionario[i][0] * acum; //uso solo la primera columna, que es el vector estacionario
     }
     return entropia;
+}
+
+void clean_stdin(void)
+{
+    int c;
+    do {
+        c = getchar();
+    } while (c != '\n' && c != EOF);
 }

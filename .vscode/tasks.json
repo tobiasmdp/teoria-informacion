@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe compilar archivo activo",
-            "command": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+            "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -26,7 +26,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe compilar archivo activo",
-            "command": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+            "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -41,7 +41,7 @@
                 "$gcc"
             ],
             "group": "build",
-            "detail": "compilador: C:\\msys64\\mingw64\\bin\\gcc.exe"
+            "detail": "compilador: /usr/bin/gcc"
         }
     ],
     "version": "2.0.0"
