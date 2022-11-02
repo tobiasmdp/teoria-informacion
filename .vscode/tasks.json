@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe compilar archivo activo",
-            "command": "/usr/bin/gcc",
+            "command": "C:\\MinGW\\bin\\gcc.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -26,7 +26,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc.exe compilar archivo activo",
-            "command": "/usr/bin/gcc",
+            "command": "C:\\MinGW\\bin\\gcc.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -41,7 +41,7 @@
                 "$gcc"
             ],
             "group": "build",
-            "detail": "compilador: /usr/bin/gcc"
+            "detail": "compilador: C:\\MinGW\\bin\\gcc.exe"
         }
     ],
     "version": "2.0.0"

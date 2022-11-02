@@ -195,14 +195,13 @@ void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, 
 
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter){
     int i=0;
-    while (i<CantPalabras && (i==0)?VCodigos[i].probabilidades==VCodigos[i].probabilidades:VCodigos[i].probabilidades==VCodigos[i-1].probabilidades)
+    while (i<CantPalabras && LongCaracter == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
         i++;
-    if (i==CantPalabras && pow(CANTSIMBOLOS,LongCaracter))
+    if (i==CantPalabras )
         return 1;
     else
         return 0;
 }
-
 /*-------------------------------------------------------------------------------punto e --------------------------------------------------------------------------------------*/
 
 void cracionArbolHuffman(Tarbol *a,struct nodoCodigo VCodigos[], int CantPalabras){

@@ -76,6 +76,7 @@ void MostrarMatriz(int cantidad, int MContSimbolos [] [MAX]){
         }
         printf("\n");
     }
+        printf("\n");
 
 }
 
@@ -94,9 +95,10 @@ void MostrarMatrizFloat(int cantidad, float Matriz [] [MAX]){
 void IngresoAbecedario(char Vsimbolos[],int *cantidad){
 
     int i;
-    printf("Ingrese la cantidad de simbolos del alfabeto:\n ");
+    printf("Ingrese la cantidad de simbolos del alfabeto (En este caso escriba 3):\n ");
     scanf("%d",cantidad);
 
+    printf("(Los siguientes simbolos son A,B,C en mayuscula)");
     for(i=0;i<*cantidad;i++){
         clean_stdin();
         printf("\n Ingrese simbolo numero %d:",i+1);
@@ -112,6 +114,7 @@ void Resultados(int MContSimbolos [] [MAX],int cantidad, int VContsimbolos [] ){
             printf("%2.4f ",(float)MContSimbolos[i][j]/VContsimbolos[j]);
         printf("\n");
     }
+    printf("\n");
 }
 
 void VectorEstacionario(int MContSimbolos [] [MAX],int cantidad,int VContsimbolos[]){
@@ -141,17 +144,19 @@ float tolerancia=0.00001;
                 suma = 0;
             }
         a++;
+        printf("\n");
         printf("Iteracion numero = %d \n",a);
 
         printf("Matriz de la iteracion: \n");
         MostrarMatrizFloat(cantidad,MatrizNueva);
     }
     while (checkTolerancia(MatrizNueva,MatrizActual,cantidad,tolerancia));
-
+    printf("\n");
     printf("vector estacionario: \n");
     for (i=0;i<cantidad;i++){
         printf(" %f ", MatrizNueva[i][0]); //cada columna de la MatrizNueva sera el vector estacionario
     }
+        printf("\n");
     printf("\nLa entropia de la fuente es: %9.4f\n", CalcularEntropia(cantidad, MatrizNueva, MatrizOriginal));
 }
 

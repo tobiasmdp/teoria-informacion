@@ -1,6 +1,6 @@
 {
     "configurations": [
-        { 
+        {
             "name": "(gdb) Iniciar",
             "type": "cppdbg",
             "request": "launch",
@@ -11,7 +11,7 @@
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerPath": "C:\\MinGW\\bin\\gdb.exe",
             "setupCommands": [
                 {
                     "description": "Habilitar la impresión con sangría para gdb",
@@ -22,6 +22,10 @@
                     "description": "Establecer tipo de desensamblado en Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Fix pretty-printing for gdb",
+                    "text": "set charset UTF-8"
                 }
             ]
         }
