@@ -108,7 +108,7 @@ int main(){
     CalculaLongitudMedia(VCodigos,CantPalabras,&LongCaracterHuffman, &LongCaracterShannonFano);
     CalculaInformacionYEntropia(VCodigos,CantPalabras,&EntropiaTotal);
     CalculaCompactacion(VCodigos,CantPalabras,LongCaracterHuffman, LongCaracterShannonFano, EntropiaTotal);
-    MostrarVector(VCodigos,CantPalabras);
+    //MostrarVector(VCodigos,CantPalabras);
     exito = escribirEncabezado(VCodigos,CantPalabras,archivoFinalHuffman,Huffman);
     if (exito != -1)
         EscribirArchivoCodificado(VCodigos,CantPalabras,archivoInicial,archivoFinalHuffman,Huffman);
@@ -476,7 +476,6 @@ void EscribirArchivoCodificado(struct nodoCodigo VCodigos[], int CantPalabras, c
                 fread(&caract,sizeof(char),1,archIni);
             }
             fread(&caract,sizeof(char),1,archIni);
-
             concatenarChar(lect,' ');
             
         }
@@ -592,9 +591,9 @@ int BusquedaHuffman(struct nodoCodigoDecodificador VCodigos[], char cadenaHuffma
         return i;
 }
 
-int BusquedaShannonFano(struct nodoCodigoDecodificador VCodigos[], char cadenaHuffman [],int CantPalabras){
+int BusquedaShannonFano(struct nodoCodigoDecodificador VCodigos[], char cadenaShannonFano [],int CantPalabras){
     int i=0;
-    while( i<CantPalabras && strcmp(VCodigos[i].cadenaHuffmanString,cadenaHuffman)!=0)
+    while( i<CantPalabras && strcmp(VCodigos[i].cadenaShannonFanoString,cadenaShannonFano)!=0)
         i++;
     if(i==CantPalabras )
         return -1;
