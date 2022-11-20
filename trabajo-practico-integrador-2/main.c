@@ -7,10 +7,12 @@
 #define MAXCARCT 30
 #define MAXCADENA 30
 #define CANTSIMBOLOS 2
+#define BYTES_A_KBYTES 1/1024
 
 
 static char Huffman[]="huffman";
 static char ShannonFano[]="shannonfano";
+int tamanioEncabezado;
 
 struct nodoCodigo{
     int FrecCodigos; //Cant repeticiones en el txt
@@ -57,7 +59,7 @@ void concatenarChar(char  [], char );
 float absoluto( float);
 void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, float *entropia);
 void CalculaLongitudMedia(struct nodoCodigo [], int , float*, float*);
-int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float,float,float);
+int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float,float,float,char[],char[],char[]);
 void cracionArbolHuffman(Tarbol *a,struct nodoCodigo VCodigos[], int CantPalabras);
 void nuevoNodoArbol(Tarbol *A,int frecuencia, char codigo[MAXCARCT], struct nodoA *izq, struct nodoA *der);
 void nuevoNodoLista(Tarbol a, TLista *nuevonodo);
@@ -93,9 +95,9 @@ int main(){
     float EntropiaTotal, cantInfoTotal;
     Tarbol arbolHuffman;
     char archivoInicial[MAXVEC]="juego-catedra.txt"; //juego-catedra.txt
-    char archivoFinalHuffman[MAXCADENA]="huffman.dat";
+    char archivoFinalHuffman[MAXCADENA]="huffman.Huf";
     char archivoResultadoHuffman[MAXCADENA]="decodificado-shannonfano.txt";
-    char archivoFinalShannonFano[MAXCADENA]="shannonfano.dat";
+    char archivoFinalShannonFano[MAXCADENA]="shannonfano.Fan";
     char archivoResultadoShannonFano[MAXCADENA]="decodificado-huffman.txt";
     LeeArch(VCodigos,&CantPalabras,&PalabrasTotales,archivoInicial);
     quickSort(VCodigos, 0, CantPalabras - 1);
@@ -106,8 +108,7 @@ int main(){
     CodificarShannonFano(VCodigos,CantPalabras,PalabrasTotales,0,CantPalabras);
 
     CalculaLongitudMedia(VCodigos,CantPalabras,&LongCaracterHuffman, &LongCaracterShannonFano);
-    CalculaInformacionYEntropia(VCodigos,CantPalabras,&EntropiaTotal);
-    CalculaCompactacion(VCodigos,CantPalabras,LongCaracterHuffman, LongCaracterShannonFano, EntropiaTotal);
+    CalculaInformacionYEntropia(VCodigos,CantPalabras,&EntropiaTotal);   
     //MostrarVector(VCodigos,CantPalabras);
     exito = escribirEncabezado(VCodigos,CantPalabras,archivoFinalHuffman,Huffman);
     if (exito != -1)
@@ -116,7 +117,7 @@ int main(){
     exito = escribirEncabezado(VCodigos,CantPalabras,archivoFinalShannonFano,ShannonFano);
     if (exito != -1)
         EscribirArchivoCodificado(VCodigos,CantPalabras,archivoInicial,archivoFinalShannonFano,ShannonFano);
-
+    CalculaCompactacion(VCodigos,CantPalabras,LongCaracterHuffman, LongCaracterShannonFano, EntropiaTotal, archivoInicial, archivoFinalHuffman, archivoFinalShannonFano);
     //Decodificacion
     DecodificarArchivoCodificado(archivoFinalHuffman,archivoResultadoHuffman,Huffman);
     DecodificarArchivoCodificado(archivoFinalShannonFano,archivoResultadoShannonFano,ShannonFano);    
@@ -217,7 +218,7 @@ void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, 
             VCodigos[i].entropia=VCodigos[i].probabilidades*VCodigos[i].cantInfo;
             *entropia+=VCodigos[i].entropia;
     }
-    printf("Entropia Total: %f \n", *entropia);
+    printf("Entropia Total: %f bits\n", *entropia);
 }
 
 void CalculaLongitudMedia(struct nodoCodigo VCodigos[], int CantPalabras, float* LongCaracterHuffman,float* LongCaracterShannonFano){
@@ -234,28 +235,56 @@ void CalculaLongitudMedia(struct nodoCodigo VCodigos[], int CantPalabras, float*
 }
 /*-------------------------------------------------------------------------------punto c --------------------------------------------------------------------------------------*/
 
-int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float LongCaracterHuffman, float LongCaracterShannonFano, float EntropiaTotal){
-    int i=0;
-    while (i<CantPalabras && strlen(VCodigos[i].cadenaShannonFano) == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
-        i++;
-    if (i==CantPalabras )
-        printf("El codigo de Shannon-Fano es compacto\n");
-    else
-        printf("El codigo de Shannon-Fano no es compacto\n");
-    printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterShannonFano*100,37);
-    printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterShannonFano))*100,37);
-    printf("Su longitud media es: %2.2f \n",LongCaracterShannonFano);
-    i=0;
+int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float LongCaracterHuffman, float LongCaracterShannonFano, float EntropiaTotal,char archivoOriginal[] ,char archivoHuffman[] ,char archivoShanonFano[]){
+    FILE *archO, *archH, *archS;
+    int i=0, sizeO = -1, sizeH = -1, sizeS = -1;
     printf("\n");
-    while (i<CantPalabras && strlen(VCodigos[i].cadenaHuffman) == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
-        i++;
-    if (i==CantPalabras )
-        printf("El codigo de Huffman es compacto\n");
-    else
-        printf("El codigo de Huffman no es compacto\n");
-    printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterHuffman*100,37);
-    printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterHuffman))*100,37);
-    printf("Su longitud media es: %2.2f \n",LongCaracterHuffman);
+    archO = fopen(archivoOriginal,"rb");
+    if (archO){
+        archH = fopen(archivoHuffman,"rb");
+        if (archH){
+            archS = fopen(archivoShanonFano,"rb");
+            if (archS){
+                fseek(archO,0,SEEK_END);
+                sizeO = ftell(archO);
+                fseek(archH,0,SEEK_END);
+                sizeH = ftell(archH);
+                fseek(archS,0,SEEK_END);
+                sizeS = ftell(archS);
+            }
+        }
+    }
+    if (sizeO != -1 && sizeH != -1 && sizeS != -1){
+        while (i<CantPalabras && strlen(VCodigos[i].cadenaShannonFano) == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
+            i++;
+        if (i==CantPalabras )
+            printf("El codigo de Shannon-Fano es compacto\n");
+        else
+            printf("El codigo de Shannon-Fano no es compacto\n");
+        printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterShannonFano*100,37);
+        printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterShannonFano))*100,37);
+        printf("Su longitud media es: %2.2f bits\n",LongCaracterShannonFano);
+        printf("Su tasa de compresion es de %2.3f:1 (Incluye encabezado)\n",sizeO/(float)sizeH);
+        printf("Su tasa de compresion es de %2.3f:1 (No incluye encabezado)\n",sizeO/(float)(sizeH-tamanioEncabezado));
+        i=0;
+        printf("\n");
+        while (i<CantPalabras && strlen(VCodigos[i].cadenaHuffman) == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
+            i++;
+        if (i==CantPalabras )
+            printf("El codigo de Huffman es compacto\n");
+        else
+            printf("El codigo de Huffman no es compacto\n");
+        printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterHuffman*100,37);
+        printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterHuffman))*100,37);
+        printf("Su longitud media es: %2.2f bits\n",LongCaracterHuffman);
+        printf("Su tasa de compresion es de %2.3f:1 (Incluye encabezado)\n",sizeO/(float)sizeS);
+        printf("Su tasa de compresion es de %2.3f:1 (No incluye encabezado)\n",sizeO/(float)(sizeS-tamanioEncabezado));
+        
+        printf("\nLa dimension del encabezado es: %2.2f kb\n", (float)tamanioEncabezado*BYTES_A_KBYTES);
+    }
+    else{
+        printf("Error al calcular tamaños de archivos");
+    }
 }
 /*-------------------------------------------------------------------------------punto e --------------------------------------------------------------------------------------*/
 
@@ -414,6 +443,7 @@ int escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras,char arch
             fwrite(&aux,sizeof(int),1,archBin); //codigo de huffman en un entero
         }
         fwrite(&aux,sizeof(int),1,archBin); // dejo 4 bytes para poner el tamanio del archivo mas tarde
+        tamanioEncabezado = ftell(archBin);
         fclose(archBin);
         exito = 1;
     }
