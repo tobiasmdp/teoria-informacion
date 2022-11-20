@@ -11,6 +11,7 @@
 
 static char Huffman[]="huffman";
 static char ShannonFano[]="shannonfano";
+
 struct nodoCodigo{
     int FrecCodigos; //Cant repeticiones en el txt
     char Codigos[MAXCARCT]; //Ej: AAA
@@ -77,7 +78,7 @@ void DecodificarArchivoCodificado(char  [], char [], char []);
 void  DecodificarBodyCodificado(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [] , int ,char[]);
 int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
 void CodificarShannonFano(struct nodoCodigo [], int , int , int , int );
-void SplitShannonFano(struct nodoCodigo [], int , int , int , char  [MAXCADENA]);
+void SplitShannonFano(struct nodoCodigo [], int , int , int , char  []);
 void TraductorAString( char [], char, int );
 
 
@@ -112,9 +113,9 @@ int main(){
     if (exito != -1)
         EscribirArchivoCodificado(VCodigos,CantPalabras,archivoInicial,archivoFinalHuffman,Huffman);
 
-    exito = escribirEncabezado(VCodigos,CantPalabras,archivoFinalShannonFano,Huffman);
+    exito = escribirEncabezado(VCodigos,CantPalabras,archivoFinalShannonFano,ShannonFano);
     if (exito != -1)
-        EscribirArchivoCodificado(VCodigos,CantPalabras,archivoInicial,archivoFinalShannonFano,Huffman);
+        EscribirArchivoCodificado(VCodigos,CantPalabras,archivoInicial,archivoFinalShannonFano,ShannonFano);
 
     //Decodificacion
     DecodificarArchivoCodificado(archivoFinalHuffman,archivoResultadoHuffman,Huffman);
@@ -243,6 +244,7 @@ int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float Lo
         printf("El codigo de Shannon-Fano no es compacto\n");
     printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterShannonFano*100,37);
     printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterShannonFano))*100,37);
+    printf("Su longitud media es: %2.2f \n",LongCaracterShannonFano);
     i=0;
     printf("\n");
     while (i<CantPalabras && strlen(VCodigos[i].cadenaHuffman) == (int)0.999999999999999+(log10(1/VCodigos[i].probabilidades)/log10(CANTSIMBOLOS)));
@@ -253,7 +255,7 @@ int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float Lo
         printf("El codigo de Huffman no es compacto\n");
     printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterHuffman*100,37);
     printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterHuffman))*100,37);
-   
+    printf("Su longitud media es: %2.2f \n",LongCaracterHuffman);
 }
 /*-------------------------------------------------------------------------------punto e --------------------------------------------------------------------------------------*/
 
@@ -323,7 +325,7 @@ void CodificarShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, int pa
     
     SplitShannonFano(VCodigos,palabrasTotales,0,CantPalabras-1,"");//palabrasTotales maneja frecuencia
 }
-void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano [MAXCADENA]){
+void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano []){
     int i=inicio, acum=0,acumant=0, iaux=0;
     char cadenaAuxiliar1[MAXCADENA];
     char cadenaAuxiliar2[MAXCADENA];
@@ -343,7 +345,7 @@ void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int ini
             iaux--;
         }
         SplitShannonFano(VCodigos,acum,inicio,iaux,strcat(cadenaAuxiliar1,"0"));
-        SplitShannonFano(VCodigos,frecuenciaTotal-acum,iaux+1,final,strcat(cadenaAuxiliar1,"1"));
+        SplitShannonFano(VCodigos,frecuenciaTotal-acum,iaux+1,final,strcat(cadenaAuxiliar2,"1"));
     }
     else{
         strcpy(VCodigos[inicio].cadenaShannonFano,cadenaShannonFano);

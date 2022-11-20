@@ -53,7 +53,7 @@ void swap(struct nodoCodigo *a, struct nodoCodigo *b);
 void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, int LongCaracter, float *entropia);
 /*punto c*/
 int checkCompacto(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter);
-/*punto e*/
+/*creacion de algoritmos*/
 void cracionArbolHuffman(Tarbol *a,struct nodoCodigo VCodigos[], int CantPalabras);
 void nuevoNodoArbol(Tarbol *A,int frecuencia, char codigo[MAXCARCT], struct nodoA *izq, struct nodoA *der);
 void nuevoNodoLista(Tarbol a, TLista *nuevonodo);
@@ -65,6 +65,9 @@ int escribirEncabezado(struct nodoCodigo VCodigos [], int cantPalabras, int Long
 int traductorBinario(char cadena[]);
 void EscribirArchivoConHuffman(struct nodoCodigo [], int , int, char [], char []);
 void sumadorBinario(int* , int* , char  [],int ); 
+
+void CodificarShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, int palabrasTotales, int inicio, int final);
+void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano []);
 /*generales*/
 void MostrarVector(struct nodoCodigo VCodigos[MAXVEC],int CantPalabras);
 // testing functions
@@ -74,8 +77,8 @@ void DecodificarArchivoConHuffman(char  [], char []);
 void  DecodificarBodyConHuffman(unsigned char ,short int ,char [],char  [],struct nodoCodigoDecodificador [] , int );
 int BusquedaHuffman(struct nodoCodigoDecodificador [], char  [],int );
 void EscribirArchivoShannonFano(struct nodoCodigo [], int , int, char [], char []);
-
 void TraductorAString( char [], char, int );
+
 int main(){
     struct nodoCodigo VCodigos[MAXVEC];
     int exito; //usado para verificar si se escribio correctamente el encabezado del archivo binario
@@ -121,7 +124,7 @@ void CodificarShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, int pa
     SplitShannonFano(VCodigos,palabrasTotales,0,CantPalabras-1,"");//palabrasTotales maneja frecuencia
 }
 
-void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano [MAXCADENA]){
+void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano []){
     int i=inicio, acum=0, iaux=0;
     char cadenaAuxiliar1[MAXCADENA];
     char cadenaAuxiliar2[MAXCADENA];
@@ -134,7 +137,7 @@ void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int ini
             i++;
         }
         SplitShannonFano(VCodigos,acum,inicio,iaux,strcat(cadenaAuxiliar1,"0"));
-        SplitShannonFano(VCodigos,frecuenciaTotal-acum,iaux+1,final,strcat(cadenaAuxiliar1,"1"));
+        SplitShannonFano(VCodigos,frecuenciaTotal-acum,iaux+1,final,strcat(cadenaAuxiliar2,"1"));
     }
     else{
         strcpy(VCodigos[inicio].cadenaShannonFano,cadenaShannonFano);
@@ -156,7 +159,6 @@ void EscribirArchivoShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, 
 
 
 }
-
 
 
 /*---------------------------------------------------------------analisis de los datos otorgados-------------------------------------------------------------------------------*/
