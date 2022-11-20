@@ -94,9 +94,9 @@ int main(){
     Tarbol arbolHuffman;
     char archivoInicial[MAXVEC]="juego-catedra.txt"; //juego-catedra.txt
     char archivoFinalHuffman[MAXCADENA]="huffman.dat";
-    char archivoResultadoHuffman[MAXCADENA]="resultado1.txt";
+    char archivoResultadoHuffman[MAXCADENA]="decodificado-shannonfano.txt";
     char archivoFinalShannonFano[MAXCADENA]="shannonfano.dat";
-    char archivoResultadoShannonFano[MAXCADENA]="resultado2.txt";
+    char archivoResultadoShannonFano[MAXCADENA]="decodificado-huffman.txt";
     LeeArch(VCodigos,&CantPalabras,&PalabrasTotales,archivoInicial);
     quickSort(VCodigos, 0, CantPalabras - 1);
     CalculaProbabilidades(VCodigos,CantPalabras,PalabrasTotales);
@@ -549,7 +549,7 @@ void DecodificarArchivoCodificado(char archivoFinal [], char archivoResultado []
     for (int i=0;i< CantPalabras;i++){
         fread(&auxLongitudCodigo,sizeof(int),1,arch);
         fread(&(VCodigos[i].Codigos),auxLongitudCodigo,1,arch); //escribe la palabra, ej ABA o ABAAB
-        VCodigos[i].Codigos[strlen(VCodigos[i].Codigos)]='\0';
+        VCodigos[i].Codigos[auxLongitudCodigo]='\0';
         if(strcmp(codificacion,Huffman)==0){
             fread(&(VCodigos[i].largoCadenaHuffman),sizeof(int),1,arch);
             fread(&(VCodigos[i].cadenaHuffmanBinario),sizeof(int),1,arch);
