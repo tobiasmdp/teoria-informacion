@@ -218,7 +218,7 @@ void CalculaInformacionYEntropia(struct nodoCodigo VCodigos[],int CantPalabras, 
             VCodigos[i].entropia=VCodigos[i].probabilidades*VCodigos[i].cantInfo;
             *entropia+=VCodigos[i].entropia;
     }
-    printf("Entropia Total: %f bits\n", *entropia);
+    printf("Entropia Total: %f binits\n", *entropia);
 }
 
 void CalculaLongitudMedia(struct nodoCodigo VCodigos[], int CantPalabras, float* LongCaracterHuffman,float* LongCaracterShannonFano){
@@ -263,7 +263,7 @@ int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float Lo
             printf("El codigo de Shannon-Fano no es compacto\n");
         printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterShannonFano*100,37);
         printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterShannonFano))*100,37);
-        printf("Su longitud media es: %2.2f bits\n",LongCaracterShannonFano);
+        printf("Su longitud media es: %2.2f binits\n",LongCaracterShannonFano);
         printf("Su tasa de compresion es de %2.3f:1 (Incluye encabezado)\n",sizeO/(float)sizeH);
         printf("Su tasa de compresion es de %2.3f:1 (No incluye encabezado)\n",sizeO/(float)(sizeH-tamanioEncabezado));
         i=0;
@@ -276,7 +276,7 @@ int CalculaCompactacion(struct nodoCodigo VCodigos[], int CantPalabras, float Lo
             printf("El codigo de Huffman no es compacto\n");
         printf("Su rendimiento es:  %2.2f %c \n", EntropiaTotal/LongCaracterHuffman*100,37);
         printf("Su redundancia es: %2.2f %c \n", (1-(EntropiaTotal/LongCaracterHuffman))*100,37);
-        printf("Su longitud media es: %2.2f bits\n",LongCaracterHuffman);
+        printf("Su longitud media es: %2.2f binits\n",LongCaracterHuffman);
         printf("Su tasa de compresion es de %2.3f:1 (Incluye encabezado)\n",sizeO/(float)sizeS);
         printf("Su tasa de compresion es de %2.3f:1 (No incluye encabezado)\n",sizeO/(float)(sizeS-tamanioEncabezado));
         
