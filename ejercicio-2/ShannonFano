@@ -1,0 +1,41 @@
+void CodificarShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, int palabrasTotales, int inicio, int final){
+    
+    SplitShannonFano(VCodigos,palabrasTotales,0,CantPalabras-1,"");//palabrasTotales maneja frecuencia
+}
+
+void SplitShannonFano(struct nodoCodigo VCodigos[], int frecuenciaTotal, int inicio, int final, char cadenaShannonFano [MAXCADENA]){
+    int i=inicio, acum=0, iaux=0;
+    char cadenaAuxiliar1[MAXCADENA];
+    char cadenaAuxiliar2[MAXCADENA];
+    if(!(inicio==final)){
+        strcpy(cadenaAuxiliar1,cadenaShannonFano);
+        strcpy(cadenaAuxiliar2,cadenaShannonFano); 
+        while(i<= final && acum<(float)frecuenciaTotal/2){
+            acum+=VCodigos[i].FrecCodigos;
+            iaux=i;
+            i++;
+        }
+        SplitShannonFano(VCodigos,acum,inicio,iaux,strcat(cadenaAuxiliar1,"0"));
+        SplitShannonFano(VCodigos,frecuenciaTotal-acum,iaux+1,final,strcat(cadenaAuxiliar1,"1"));
+    }
+    else{
+        strcpy(VCodigos[inicio].cadenaShannonFano,cadenaShannonFano);
+    }
+}
+
+
+void EscribirArchivoShannonFano(struct nodoCodigo VCodigos[], int CantPalabras, int LongCaracter, char archivoInicial[], char archivoFinal[]){
+    FILE* archIni, *archFin;
+    archIni=fopen(archivoInicial,"rt");
+    archFin=fopen(archivoFinal,"rb+"); 
+    if(archIni==NULL)
+        printf("Error: No existe el archivo de texto");
+    else{
+        
+    }
+    fclose(archIni);
+    fclose(archFin);
+
+
+
+}
