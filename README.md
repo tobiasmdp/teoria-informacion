@@ -5,7 +5,7 @@
 
 ### Ejecucion
 
-    cd ejercicio-{numero}-{parte}-{inciso}
+    cd ejercicio-{numero}
     ./main.linux 
 
 ### Compilacion
@@ -16,12 +16,12 @@
 
 ## Nomenclatura 
 
+El repositorio se divide en las 2 entregas "trabajo-..-1" y "trabajo-..-2"
+
 Los ejercicios separados en carpetas nombradas segun la siguiente nomenclatura:
-ejercicio-{numero}-{parte}-{inciso}
+ejercicio-{numero}
 
 1. Numero: Numero de trabajo. *Entero de valor 1 o 2*
-2. Parte: Porciones / incisos principales en los cuales se divide el trabajo practico. *Entero*
-3. Inciso: Sub-indice de cada parte. *Caracter alfabetico minuscula*
 
 ## Integrantes
 
